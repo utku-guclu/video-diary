@@ -1,10 +1,11 @@
 export interface Video {
   id: string;
   uri: string;
-  name: string;
+  title: string;
+  createdAt: number;
   description: string;
-  timestamp: number;
   duration: number;
+  thumbnail: string;
 }
 
 export interface CropConfig {

@@ -1,42 +1,23 @@
-// Initial state for the video store
-const videos: { id: string; title: string; url: string; }[] = [];
+import { create } from 'zustand';
+import { Video } from '../types';
 
-// Function to add a video
-export const addVideo = (video: { id: string; title: string; url: string; }) => {
-    videos.push(video);
-};
+interface VideoStore {
+  videos: Video[];
+  addVideo: (video: Video) => void;
+  deleteVideo: (id: string) => void;
+  updateVideo: (id: string, updates: Partial<Video>) => void;
+}
 
-// Function to remove a video by ID
-export const removeVideo = (id: string) => {
-    const index = videos.findIndex(video => video.id === id);
-    if (index !== -1) {
-        videos.splice(index, 1);
-    }
-};
-
-// Function to get the current list of videos
-export const getVideos = () => {
-    return videos;
-};
-
-import { useState } from 'react';
-
-export const useVideoStore = () => {
-    const [videos, setVideos] = useState(getVideos());
-
-    const addNewVideo = (video: { id: string; title: string; url: string; }) => {
-        addVideo(video);
-        setVideos(getVideos()); // Update state after adding
-    };
-
-    const removeVideoById = (id: string) => {
-        removeVideo(id);
-        setVideos(getVideos()); // Update state after removal
-    };
-
-    return {
-        videos,
-        addNewVideo,
-        removeVideoById,
-    };
-};
+// Create Zustand store
+export const useVideoStore = create<VideoStore>((set) => ({
+  videos: [],
+  addVideo: (video) => set((state) => ({ 
+    videos: [...state.videos, video] 
+  })),
+  deleteVideo: (id) => set((state) => ({ 
+    videos: state.videos.filter(v => v.id !== id) 
+  })),
+  updateVideo: (id, updates) => set((state) => ({
+    videos: state.videos.map(v => v.id === id ? { ...v, ...updates } : v)
+  }))
+}));
