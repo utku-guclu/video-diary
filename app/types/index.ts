@@ -14,3 +14,6 @@ export interface CropConfig {
 }
 
 export type VideoExtension = 'mp4' | 'mov' | 'avi' | 'mkv' | 'wmv' | 'flv' | 'webm';
+
+const types = {};
+export default types;

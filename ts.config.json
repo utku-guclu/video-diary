@@ -2,6 +2,8 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
+    "target": "esnext",
+    "jsx": "react", 
     "types": ["jest", "node", "@testing-library/jest-native"]
   }
 }

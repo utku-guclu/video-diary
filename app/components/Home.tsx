@@ -1,29 +1,36 @@
+{/* React */ }
 import { View, Text, TouchableOpacity, Alert, Platform } from 'react-native';
-import { useState } from 'react';
-import { FlashList } from '@shopify/flash-list';
+import { useCallback, useRef, useState } from 'react';
+{/* Expo */ }
+import * as VideoThumbnails from 'expo-video-thumbnails';
+import { useVideoPlayer, VideoView } from 'expo-video';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 
-{/* Components */}
-import { Header } from './Header';
-import { MetadataForm } from './MetaDataForm';
-
-{/* Store */}
-import { useVideoStore } from '../store/videoStore';
-
-{/* Types */}
+{/* Components */ }
+import Header from './Header';
+import MetadataForm from './MetaDataForm';
+import VideoList from './VideoList';
+{/* Store */ }
+import videoStore from '../store/videoStore';
+{/* Types */ }
 import { VideoExtension } from '../types';
+import { dummyVideos } from '../temp/dummyVideos';
+import React from 'react';
 
 export default function Home() {
-  {/* States */}
+  {/* States */ }
   const [isFormVisible, setFormVisible] = useState(false);
   const [selectedVideoUri, setSelectedVideoUri] = useState<string | null>(null);
 
-  {/* Controllers */}
-  const addVideo = useVideoStore(state => state.addVideo);
+  {/* Refs */ }
+  const videoRef = useRef(null);
 
-  {/* Handlers */}
-  const handleAddVideo = async () => {
+  {/* Controllers */ }
+  const { videos, addVideo } = videoStore();
+
+  {/* Handlers */ }
+  const handleAddVideo = useCallback(async () => {
     // Check permissions
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
@@ -66,7 +73,7 @@ export default function Home() {
           // Validate file extension
           const fileExtension = videoUri.split('.').pop()?.toLowerCase() as VideoExtension;
           const validVideoExtensions: VideoExtension[] = ['mp4', 'mov', 'avi', 'wmv', 'flv', 'webm'];
-          
+
           if (!validVideoExtensions.includes(fileExtension)) {
             Alert.alert('Invalid file type', 'Please select a valid video file');
             return;
@@ -83,53 +90,62 @@ export default function Home() {
         Alert.alert('Unsupported', 'Video upload is not supported on web platforms');
       }
     }
-  };
+  }, []);
 
-  const handleSubmitVideo = async (metadata: { title: string; description: string }) => {
+  const handleSubmitVideo = useCallback(async (metadata: { title: string; description: string }) => {
     if (!selectedVideoUri) return;
 
-    // Add Metadata
-    const newVideo = {
-      id: Date.now().toString(),
-      title: metadata.title,
-      description: metadata.description,
-      uri: selectedVideoUri,
-      createdAt: Date.now(),
-      thumbnail: '', // Will be implemented
-      duration: 0    // Will be implemented
-    };
+    try {
+      // Generate thumbnail
+      const { uri: thumbnailUri } = await VideoThumbnails.getThumbnailAsync(selectedVideoUri, {
+        time: 0,
+        quality: 0.5,
+      });
 
-    addVideo(newVideo);
-    setFormVisible(false);
-    setSelectedVideoUri(null);
-  };
+      const player = useVideoPlayer(selectedVideoUri);
+      const videoDuration = await new Promise<number>(resolve => {
+        player.addListener('statusChange', ({ status }) => {
+          if (status === 'readyToPlay') {
+            resolve(player.duration);
+          }
+        });
+      });
+      const newVideo = {
+        id: Date.now().toString(),
+        title: metadata.title,
+        description: metadata.description,
+        uri: selectedVideoUri,
+        createdAt: Date.now(),
+        thumbnail: thumbnailUri,
+        duration: Math.floor(videoDuration)
+      };
+
+      addVideo(newVideo);
+      setFormVisible(false);
+      setSelectedVideoUri(null);
+
+    } catch (error) {
+      console.log('Error processing video:', error);
+      Alert.alert('Error', 'Failed to process video');
+    }
+  }, [selectedVideoUri, addVideo]);
 
   return (
     <View className="flex-1 bg-gray-50">
       {/* Header */}
       <Header />
-
       {/* Content */}
       {isFormVisible ? (
-        <MetadataForm 
+        <MetadataForm
           onSubmit={handleSubmitVideo}
           initialValues={{ title: '', description: '' }}
         />
       ) : (
-        <FlashList
-          data={[]}
-          renderItem={() => null}
-          estimatedItemSize={100}
-          ListEmptyComponent={
-            <View className="flex-1 items-center justify-center p-8">
-              <Text className="text-2xl font-semibold text-gray-800 mb-2">
-                Your Video Collection
-              </Text>
-              <Text className="text-gray-500 text-center text-lg">
-                No videos yet. Start by adding one!
-              </Text>
-            </View>
-          }
+        <VideoList
+          videos={dummyVideos}
+          onVideoPress={(video) => {
+            // Todo: Handle video selection
+          }}
         />
       )}
 

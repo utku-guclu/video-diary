@@ -6,7 +6,7 @@ interface Props {
   onPress: () => void;
 }
 
-export function VideoItem({ video, onPress }: Props) {
+export default function VideoItem({ video, onPress }: Props) {
   return (
     <TouchableOpacity 
       onPress={onPress}

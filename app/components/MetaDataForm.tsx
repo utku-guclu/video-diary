@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 
@@ -7,7 +8,7 @@ interface Props {
 }
 
 // Component to display video metadata form
-export function MetadataForm({ onSubmit, initialValues }: Props) {
+export default function MetadataForm({ onSubmit, initialValues }: Props) {
   const [title, setTitle] = useState(initialValues?.title || '');
   const [description, setDescription] = useState(initialValues?.description || '');
 
