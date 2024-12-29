@@ -9,6 +9,25 @@ export interface Video {
   thumbnail: string;
 }
 
+export interface VideoAsset {
+  uri: string;
+  duration?: number;
+  width?: number;
+  height?: number;
+  type?: string;
+}
+
+export interface ImagePickerResult {
+  canceled: boolean;
+  assets?: VideoAsset[];
+}
+
+export interface FileInfo {
+  exists: boolean;
+  size: number;
+  uri: string;
+}
+
 // Metadata
 export interface Metadata {
   title: string;

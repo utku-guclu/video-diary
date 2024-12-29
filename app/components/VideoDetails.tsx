@@ -1,13 +1,35 @@
-import { View, Text } from 'react-native';
-import { Video } from 'expo-av';
-import videoStore from '../store/videoStore';
 import React from 'react';
+import { useRef, useEffect } from 'react';
+import { View, Text, ScrollView, Dimensions, useWindowDimensions } from 'react-native';
+import { ResizeMode, Video } from 'expo-av';
+import { MaterialIcons } from '@expo/vector-icons';
+import * as ScreenOrientation from 'expo-screen-orientation';
+
+import videoStore from '../store/videoStore';
+
+import { useOrientation } from '@/hooks/useOrientation';
 
 interface VideoDetailsProps {
   id: string | string[];
 }
 
 export default function VideoDetails({ id }: VideoDetailsProps) {
+  const videoRef = useRef<Video>(null);
+  const orientation = useOrientation();
+  const { width, height } = useWindowDimensions();
+
+  const isLandscape = (orientation === 'LANDSCAPE');
+
+  useEffect(() => {
+    // Enable rotation
+    ScreenOrientation.unlockAsync();
+
+    return () => {
+      // Lock to portrait when leaving
+      ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT);
+    };
+  }, []);
+
   const video = videoStore((state) => 
     state.videos.find((v) => v.id === id)
   );
@@ -15,33 +37,69 @@ export default function VideoDetails({ id }: VideoDetailsProps) {
   if (!video) {
     return (
       <View className="flex-1 items-center justify-center">
-        <Text>Video not found</Text>
+        <Text className="text-lg text-gray-600">Video not found</Text>
       </View>
     );
   }
 
+  const formatDuration = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  const formatDate = (timestamp: number) => {
+    return new Date(timestamp).toLocaleDateString('tr-TR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
   return (
-    <View className="flex-1 bg-white">
-      <Video
-        source={{ uri: video.uri }}
-        useNativeControls
-        // resizeMode="contain"
-        className="w-full h-64"
-      />
+    <ScrollView className="flex-1 bg-white">
+      <View className="w-full aspect-video" style={[
+        { width: '100%' },
+        isLandscape && { 
+          height: '100%', 
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          zIndex: 10 
+        }
+      ]}>
+        <Video
+          ref={videoRef}
+          source={{ uri: video.uri }}
+          useNativeControls
+          resizeMode={ResizeMode.COVER}
+          style={{ width: '100%', height: isLandscape ? height : width * 0.5625 }}
+        />
+      </View>
       
-      <View className="p-4">
-        <Text className="text-2xl font-bold">{video.title}</Text>
-        <Text className="text-gray-600 mt-2">{video.description}</Text>
-        
-        <View className="mt-4">
-          <Text className="text-sm text-gray-500">
-            Created: {new Date(video.createdAt).toLocaleDateString()}
-          </Text>
-          <Text className="text-sm text-gray-500">
-            Duration: {Math.floor(video.duration / 60)}:{video.duration % 60}
+    {!isLandscape && (
+        <View className="p-4 space-y-4">
+        <View>
+          <Text className="text-2xl font-bold text-gray-900">{video.title}</Text>
+          <View className="flex-row items-center mt-2 space-x-4">
+            <View className="flex-row items-center">
+              <MaterialIcons name="access-time" size={16} color="#6B7280" />
+              <Text className="ml-1 text-gray-500">{formatDuration(video.duration)}</Text>
+            </View>
+            <View className="flex-row items-center">
+              <MaterialIcons name="calendar-today" size={16} color="#6B7280" />
+              <Text className="ml-1 text-gray-500">{formatDate(video.createdAt)}</Text>
+            </View>
+          </View>
+        </View>
+
+        <View className="pt-2">
+          <Text className="text-base text-gray-700 leading-relaxed">
+            {video.description}
           </Text>
         </View>
       </View>
-    </View>
+    )}
+    </ScrollView>
   );
 }

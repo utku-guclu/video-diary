@@ -35,3 +35,5 @@ export const TabButton = ({
     </Pressable>
   );
 };
+
+export default TabButton;

@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { Video } from '../types';
 
+import { dummyVideos } from '../temp/dummyVideos';
+
 interface VideoStore {
   videos: Video[];
   isFormVisible: boolean;
@@ -14,7 +16,7 @@ interface VideoStore {
 }
 
 const videoStore = create<VideoStore>((set) => ({
-  videos: [],
+  videos: [...dummyVideos], // test with dummyVideos
   isFormVisible: false,
   selectedVideoUri: null,
 

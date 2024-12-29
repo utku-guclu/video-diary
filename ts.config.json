@@ -4,6 +4,6 @@
     "strict": true,
     "target": "esnext",
     "jsx": "react", 
-    "types": ["jest", "node", "@testing-library/jest-native"]
+    "types": ["jest", "node", "@testing-library/jest-native", "nativewind/types"]
   }
 }

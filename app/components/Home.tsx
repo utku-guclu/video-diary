@@ -1,19 +1,19 @@
 {/* React */ }
 import React from 'react';
 import { View, Text, TouchableOpacity, Alert, Platform } from 'react-native';
+
 {/* Expo */ }
 import { useVideoPlayer, VideoView } from 'expo-video';
+import { router } from 'expo-router';
 
 {/* Components */ }
 import Header from './Header';
 import MetadataForm from './MetaDataForm';
 import VideoList from './VideoList';
+
 {/* Store */ }
 
 {/* Types */ }
-
-{/* Temp */ }
-import { dummyVideos } from '../temp/dummyVideos';
 
 {/* Hooks */ }
 import { useVideoStore } from '@/hooks/useVideoStore';
@@ -50,9 +50,9 @@ export default function Home() {
         />
       ) : (
         <VideoList
-          videos={[...dummyVideos, ...videos]}
+          videos={videos}
           onVideoPress={(video) => {
-            // Todo: Handle video selection
+            router.push(`/details/${video.id}`);
           }}
         />
       )}
