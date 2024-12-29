@@ -14,11 +14,24 @@ export default function RootLayout() {
         screenOptions={{
           contentStyle: {
             backgroundColor: colorScheme === 'dark' ? '#000' : '#fff'
-          }
+          },
+          // Consistent dark mode in headers
+          headerStyle: {
+            backgroundColor: colorScheme === 'dark' ? '#000' : '#fff'
+          },
+          headerTintColor: colorScheme === 'dark' ? '#fff' : '#000'
         }}
       >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="details/[id]" options={{ title: 'Video Details' }} />
+        <Stack.Screen 
+          name="details/[id]" 
+          options={{ 
+            title: 'Video Details',
+            // Additional dark mode styles for details screen
+            presentation: 'modal',
+            animation: 'slide_from_right'
+          }} 
+        />
       </Stack>
     </QueryClientProvider>
   );

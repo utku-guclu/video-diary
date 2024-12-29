@@ -1,3 +1,4 @@
+// Video
 export interface Video {
   id: string;
   uri: string;
@@ -6,6 +7,12 @@ export interface Video {
   description: string;
   duration: number;
   thumbnail: string;
+}
+
+// Metadata
+export interface Metadata {
+  title: string;
+  description: string;
 }
 
 export interface CropConfig {

@@ -1,5 +1,6 @@
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { Video } from '../types';
+import React from 'react';
 
 interface Props {
   video: Video;

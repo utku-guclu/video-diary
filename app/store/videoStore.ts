@@ -3,6 +3,11 @@ import { Video } from '../types';
 
 interface VideoStore {
   videos: Video[];
+  isFormVisible: boolean;
+  setFormVisible: (visible: boolean) => void;
+  selectedVideoUri: string | null;
+  setSelectedVideoUri: (uri: string | null) => void;
+ 
   addVideo: (video: Video) => void;
   deleteVideo: (id: string) => void;
   updateVideo: (id: string, updates: Partial<Video>) => void;
@@ -10,6 +15,9 @@ interface VideoStore {
 
 const videoStore = create<VideoStore>((set) => ({
   videos: [],
+  isFormVisible: false,
+  selectedVideoUri: null,
+
   addVideo: (video) => set((state) => ({ 
     videos: [...state.videos, video] 
   })),
@@ -18,7 +26,13 @@ const videoStore = create<VideoStore>((set) => ({
   })),
   updateVideo: (id, updates) => set((state) => ({
     videos: state.videos.map(v => v.id === id ? { ...v, ...updates } : v)
-  }))
+  })),
+  setFormVisible: (visible) => set({ 
+    isFormVisible: visible 
+  }),
+  setSelectedVideoUri: (uri) => set({ 
+    selectedVideoUri: uri 
+  }),
 }));
 
 export default videoStore;

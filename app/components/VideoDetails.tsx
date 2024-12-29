@@ -1,6 +1,7 @@
 import { View, Text } from 'react-native';
 import { Video } from 'expo-av';
 import videoStore from '../store/videoStore';
+import React from 'react';
 
 interface VideoDetailsProps {
   id: string | string[];
