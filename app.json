@@ -30,7 +30,7 @@
     "plugins": [
       "expo-router",
       [
-        "expo-video",
+        "expo-av",
         {
           "supportsBackgroundPlayback": true,
           "supportsPictureInPicture": true
