@@ -25,6 +25,10 @@ export const useVideoStore = () => {
     store.setSelectedVideoUri(uri);
   }, []);
 
+  const handleLoadVideos = useCallback(() => {
+    store.loadVideos();
+  }, []);
+
   return {
     // State
     videos: store.videos,
@@ -37,6 +41,7 @@ export const useVideoStore = () => {
     updateVideo: handleUpdateVideo,
     setFormVisible: handleFormVisibility,
     setSelectedVideoUri: handleSelectedVideo,
+    loadVideos: handleLoadVideos,
   };
 };
 

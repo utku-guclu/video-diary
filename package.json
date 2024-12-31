@@ -5,27 +5,23 @@
   "main": "index.js",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web",
     "test": "jest --watchAll"
-  },
-  "jest": {
-    "preset": "jest-expo",
-    "transformIgnorePatterns": [
-      "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg)"
-    ]
   },
   "dependencies": {
     "@babel/runtime": "^7.26.0",
     "@expo/config-plugins": "^9.0.12",
     "@expo/metro-config": "^0.19.8",
+    "@expo/vector-icons": "^14.0.4",
     "@react-native-async-storage/async-storage": "1.23.1",
     "@react-native-community/slider": "^4.5.5",
     "@rneui/base": "4.0.0-rc.7",
     "@rneui/themed": "4.0.0-rc.8",
     "@shopify/flash-list": "1.7.1",
     "@tanstack/react-query": "^5.62.11",
+    "@testing-library/react-hooks": "^8.0.1",
     "@unimodules/react-native-adapter": "^6.3.9",
     "autoprefixer": "^10.4.20",
     "expo": "^52.0.23",
@@ -77,9 +73,9 @@
     "@react-native-community/cli": "^15.1.3",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/jest-native": "^5.4.3",
-    "@testing-library/react-native": "^12.3.0",
+    "@testing-library/react-native": "latest",
     "@types/babel__preset-env": "^7.9.7",
-    "@types/jest": "^29.5.14",
+    "@types/jest": "latest",
     "@types/react": "18.3.12",
     "@types/react-dom": "~18.3.1",
     "@types/react-test-renderer": "^19.0.0",
@@ -92,7 +88,7 @@
     "metro-react-native-babel-preset": "^0.77.0",
     "react-native-reanimated": "^3.16.6",
     "react-test-renderer": "^18.2.0",
-    "ts-jest": "^29.2.5",
+    "ts-jest": "latest",
     "typescript": "^5.7.2",
     "webpack": "^5.97.1"
   },

@@ -26,8 +26,13 @@ yarn-debug.*
 yarn-error.*
 
 # macOS
+/ios
 .DS_Store
 *.pem
+
+# android
+/android
+/build
 
 # local env files
 .env*.local
@@ -36,4 +41,5 @@ yarn-error.*
 *.tsbuildinfo
 
 # test results
+tests/*
 coverage/

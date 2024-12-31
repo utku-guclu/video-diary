@@ -1,11 +1,9 @@
 import { useColorScheme } from 'react-native';
 import { Stack } from 'expo-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import React, { useEffect } from 'react';
+import React from 'react';
 
 import { lightTheme, darkTheme } from './theme';
-
-import { DatabaseService } from '../db/database';
 
 const queryClient = new QueryClient();
 
@@ -13,15 +11,6 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
   const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
 
-  useEffect(() => {
-    // Initialize database
-    const initDb = async () => {
-      const dbService = DatabaseService.getInstance();
-      await dbService.initialize();
-    };
-
-    initDb();
-  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

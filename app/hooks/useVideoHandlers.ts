@@ -1,5 +1,5 @@
 // hooks/useVideoHandlers.ts
-import { useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Alert, Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
@@ -9,33 +9,33 @@ import { useVideoStore } from './useVideoStore';
 import { FileInfo, ImagePickerResult, Metadata } from '@/types';
 
 const useVideoHandlers = () => {
+  const [videoResult, setVideoResult] = useState<ImagePickerResult | null>(null);
   const { selectedVideoUri, setFormVisible, setSelectedVideoUri, addVideo } = useVideoStore();
   const player = useVideoPlayer(selectedVideoUri || null);
 
-  let pickerResult: ImagePickerResult | null = null;
-
   const handleAddVideo = useCallback(async () => {
     // Check permissions
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-    if (!permission.granted) {
+    if (status !== 'granted') {
       Alert.alert('Permission needed', 'This app needs access to your media library');
       return;
     }
     console.log("Permission granted!");
 
     // Pick video
-    pickerResult = await ImagePicker.launchImageLibraryAsync({
+    const result = await ImagePicker.launchImageLibraryAsync({
+      /* I use MediaTypeOptions here instead of MediaType since I can't get it to work  */
       mediaTypes: ImagePicker.MediaTypeOptions.Videos,
       allowsEditing: true,
+      aspect: [16, 9],
       quality: 1,
       videoMaxDuration: 300,
     });
 
-    console.log("RESULT", pickerResult)
     // Handle result
-    if (!pickerResult?.canceled && pickerResult?.assets?.[0]) {
-      const videoUri = pickerResult.assets[0].uri;
+    if (!result?.canceled && result?.assets?.[0]) {
+      const videoUri = result.assets[0].uri;
 
       try {
         const fileInfo = await FileSystem.getInfoAsync(videoUri) as FileInfo;
@@ -57,7 +57,8 @@ const useVideoHandlers = () => {
           Alert.alert('Invalid file type', 'Please select a valid video file');
           return;
         }
-
+        
+        setVideoResult(result);
         setSelectedVideoUri(videoUri);
         setFormVisible(true);
       } catch (error) {
@@ -68,7 +69,7 @@ const useVideoHandlers = () => {
 
   const handleSubmitVideo = useCallback(async (metadata: Metadata) => {
     console.log('handleSubmitVideo called with:', metadata);
-    if (!selectedVideoUri) return;
+    if (!selectedVideoUri || !videoResult?.assets?.[0]) return;
 
     // Generate thumbnail
     try {
@@ -78,8 +79,6 @@ const useVideoHandlers = () => {
         quality: 0.5,
       });
 
-      const videoDuration = pickerResult?.assets?.[0].duration ?? 0;
-
       // Create a new video object
       const newVideo = {
         id: Date.now().toString(),
@@ -88,7 +87,7 @@ const useVideoHandlers = () => {
         uri: selectedVideoUri,
         createdAt: Date.now(),
         thumbnail: thumbnailUri,
-        duration: Math.floor(videoDuration),
+        duration: Math.floor((videoResult.assets?.[0]?.duration ?? 0) / 1000),
       };
 
       console.log('Adding new video:', newVideo);

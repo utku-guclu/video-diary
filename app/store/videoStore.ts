@@ -4,7 +4,7 @@ import { Video } from '../types';
 import { dummyVideos } from '../temp/dummyVideos';
 
 import * as SQLite from 'expo-sqlite';
-import { DatabaseService } from 'db/database';
+import { DatabaseService } from '@/db/database';
 
 let db: SQLite.SQLiteDatabase;
 
@@ -18,19 +18,25 @@ interface VideoStore {
   addVideo: (video: Video) => void;
   deleteVideo: (id: string) => void;
   updateVideo: (id: string, updates: Partial<Video>) => void;
+
+  loadVideos: () => Promise<void>;
 }
 
 // Creating video store
 const videoStore = create<VideoStore>((set) => ({
-  videos: [...dummyVideos], // test data
+  videos: [], 
   isFormVisible: false, // set metadata form visibility to false initially
   selectedVideoUri: null, // selected video uri
 
   // Loading videos
   loadVideos: async () => {
-    const dbService = DatabaseService.getInstance();
-    const videos = await dbService.getAllVideos();
-    set({ videos });
+    try {
+      const dbService = DatabaseService.getInstance();
+      const videos = await dbService.getAllVideos();
+      set({ videos });
+    } catch (error) {
+      console.error('Failed to load videos:', error);
+    }
   },
 
   // Add video to database
