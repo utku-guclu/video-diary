@@ -2,11 +2,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Alert, Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system';
-import * as VideoThumbnails from 'expo-video-thumbnails';
 import { useVideoPlayer } from 'expo-video';
 import { useVideoStore } from './useVideoStore';
-import { FileInfo, ImagePickerResult, Metadata } from '@/types';
+import { ImagePickerResult, Metadata } from '@/types';
+import { VideoProcessor } from '@/utils/videoProcessor';
 
 const useVideoHandlers = () => {
   const [videoResult, setVideoResult] = useState<ImagePickerResult | null>(null);
@@ -38,22 +37,18 @@ const useVideoHandlers = () => {
       const videoUri = result.assets[0].uri;
 
       try {
-        const fileInfo = await FileSystem.getInfoAsync(videoUri) as FileInfo;
-        if (!fileInfo.exists) {
+        const validation = await VideoProcessor.validateVideo(videoUri);
+        if (!validation.exists) {
           Alert.alert('File not found', 'The selected file does not exist');
           return;
         }
 
-        if (fileInfo.size > 100 * 1024 * 1024) {
+        if (validation.size > 100 * 1024 * 1024) {
           Alert.alert('Video too large', 'Please select a video under 100MB');
           return;
         }
 
-        // Check file type
-        const fileExtension = videoUri.split('.').pop()?.toLowerCase()!;
-        const validVideoExtensions = ['mp4', 'mov', 'avi', 'wmv', 'flv', 'webm'];
-
-        if (!validVideoExtensions.includes(fileExtension)) {
+        if (!validation.isValidType) {
           Alert.alert('Invalid file type', 'Please select a valid video file');
           return;
         }
@@ -74,10 +69,7 @@ const useVideoHandlers = () => {
     // Generate thumbnail
     try {
       console.log('Generating thumbnail...');
-      const { uri: thumbnailUri } = await VideoThumbnails.getThumbnailAsync(selectedVideoUri, {
-        time: 0,
-        quality: 0.5,
-      });
+      const thumbnailUri = await VideoProcessor.generateThumbnail(selectedVideoUri);
 
       // Create a new video object
       const newVideo = {

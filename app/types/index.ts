@@ -37,6 +37,13 @@ export interface Metadata {
 export interface CropConfig {
   startTime: number;
   endTime: number;
+  duration: number;
+}
+
+export interface VideoProcessingOptions {
+    crop?: CropConfig;
+    quality?: number;
+    format?: 'mp4' | 'mov';
 }
 
 export type VideoExtension = 'mp4' | 'mov' | 'avi' | 'mkv' | 'wmv' | 'flv' | 'webm';
