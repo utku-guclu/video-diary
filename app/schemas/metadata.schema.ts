@@ -10,3 +10,5 @@ export const metadataSchema = z.object({
 });
 
 export type MetadataSchema = z.infer<typeof metadataSchema>;
+
+export default metadataSchema;

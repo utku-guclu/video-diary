@@ -3,10 +3,7 @@ import { Video } from '../types';
 
 import { dummyVideos } from '../temp/dummyVideos';
 
-import * as SQLite from 'expo-sqlite';
 import { DatabaseService } from '@/db/database';
-
-let db: SQLite.SQLiteDatabase;
 
 interface VideoStore {
   videos: Video[];
@@ -14,71 +11,58 @@ interface VideoStore {
   setFormVisible: (visible: boolean) => void;
   selectedVideoUri: string | null;
   setSelectedVideoUri: (uri: string | null) => void;
-
   addVideo: (video: Video) => void;
   deleteVideo: (id: string) => void;
   updateVideo: (id: string, updates: Partial<Video>) => void;
-
   loadVideos: () => Promise<void>;
 }
 
 // Creating video store
-const videoStore = create<VideoStore>((set) => ({
-  videos: [], 
-  isFormVisible: false, // set metadata form visibility to false initially
-  selectedVideoUri: null, // selected video uri
+const videoStore = create<VideoStore>((set) => {
+  const dbService = DatabaseService.getInstance();
 
-  // Loading videos
-  loadVideos: async () => {
-    try {
-      const dbService = DatabaseService.getInstance();
-      const videos = await dbService.getAllVideos();
-      set({ videos });
-    } catch (error) {
-      console.error('Failed to load videos:', error);
-    }
-  },
+  return {
+    videos: [],
+    isFormVisible: false, // set metadata form visibility to false initially
+    selectedVideoUri: null, // selected video uri
 
-  // Add video to database
-  addVideo: async (video) => {
-    if (!db) db = await SQLite.openDatabaseAsync('videos.db');
-    await db.runAsync(
-      `INSERT INTO videos (id, uri, title, description, createdAt, duration, thumbnail) 
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [video.id, video.uri, video.title, video.description, video.createdAt, video.duration, video.thumbnail]
-    );
-    // Add video to state
-    set(state => ({ videos: [...state.videos, video] }));
-  },
+    // Loading videos
+    loadVideos: async () => {
+      try {
+        const videos = await dbService.getAllVideos();
+        set({ videos });
+      } catch (error) {
+        console.error('Failed to load videos:', error);
+      }
+    },
 
-  // Delete video from database
-  deleteVideo: async (id) => {
-    if (!db) db = await SQLite.openDatabaseAsync('videos.db');
-    await db.runAsync('DELETE FROM videos WHERE id = ?', [id]);
-    set(state => ({ videos: state.videos.filter(v => v.id !== id) }));
-  },
+    // Add video to database
+    addVideo: async (video) => {
+      await dbService.addVideo(video);
+      set(state => ({ videos: [...state.videos, video] }));
+    },
 
-  // Update video
-  updateVideo: async (id, updates) => {
-    if (!db) db = await SQLite.openDatabaseAsync('videos.db');
-    const setClause = Object.keys(updates)
-      .map(key => `${key} = ?`)
-      .join(', ');
+    // Delete video from database
+    deleteVideo: async (id) => {
+      await dbService.deleteVideo(id);
+      set(state => ({ videos: state.videos.filter(v => v.id !== id) }));
+    },
 
-    await db.runAsync(
-      `UPDATE videos SET ${setClause} WHERE id = ?`,
-      [...Object.values(updates), id]
-    );
+    // Update video
+    updateVideo: async (id, updates) => {
+      await dbService.updateVideo(id, updates);
+      set(state => ({
+        videos: state.videos.map(v =>
+          v.id === id ? { ...v, ...updates } : v
+        )
+      }));
+    },
 
-    set(state => ({
-      videos: state.videos.map(v => v.id === id ? { ...v, ...updates } : v)
-    }));
-  },
-
-  // Setting form visibility
-  setFormVisible: (visible) => set({ isFormVisible: visible }),
-  // Setting selected video
-  setSelectedVideoUri: (uri) => set({ selectedVideoUri: uri }),
-}));
+    // Setting form visibility
+    setFormVisible: (visible) => set({ isFormVisible: visible }),
+    // Setting selected video
+    setSelectedVideoUri: (uri) => set({ selectedVideoUri: uri }),
+  }
+});
 
 export default videoStore;

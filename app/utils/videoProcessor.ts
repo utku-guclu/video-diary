@@ -30,4 +30,4 @@ export const VideoProcessor = {
     }
 };
 
-
+export default VideoProcessor;

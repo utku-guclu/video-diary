@@ -1,4 +1,3 @@
-// hooks/useVideoHandlers.ts
 import { useCallback, useEffect, useState } from 'react';
 import { Alert, Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
