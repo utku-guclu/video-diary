@@ -7,6 +7,10 @@ export class DatabaseService {
 
     private constructor() {
         this.db = SQLite.openDatabaseSync('videos.db');
+
+        /* CAUTION: This is for resetting the database! */
+        // this.db.runAsync('DROP TABLE IF EXISTS videos');
+
         this.db.runAsync(`
             CREATE TABLE IF NOT EXISTS videos (
                 id TEXT PRIMARY KEY,
@@ -29,14 +33,17 @@ export class DatabaseService {
     }
 
     async getAllVideos(): Promise<Video[]> {
-        const result = await this.db.getAllAsync<Video>('SELECT * FROM videos ORDER BY createdAt DESC');
-        return result;
+        const result = await this.db.getAllAsync<any>('SELECT * FROM videos ORDER BY createdAt DESC');
+        return result.map(video => ({
+            ...video,
+            cropConfig: video.cropConfig ? JSON.parse(video.cropConfig) : undefined
+        }));
     }
 
     async addVideo(video: Video): Promise<void> {
         const query = `
-            INSERT INTO videos (id, uri, title, description, createdAt, duration, thumbnail) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO videos (id, uri, title, description, createdAt, duration, thumbnail, cropConfig) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         `;
         await this.db.runAsync(query, [
             video.id,
@@ -45,9 +52,11 @@ export class DatabaseService {
             video.description,
             video.createdAt,
             video.duration,
-            video.thumbnail
+            video.thumbnail,
+            video.cropConfig ? JSON.stringify(video.cropConfig) : null
         ]);
     }
+
 
     async deleteVideo(id: string): Promise<void> {
         await this.db.runAsync('DELETE FROM videos WHERE id = ?', [id]);
@@ -56,8 +65,8 @@ export class DatabaseService {
     async updateVideo(id: string, updates: Partial<Video>): Promise<void> {
         const validColumns = ['uri', 'title', 'description', 'createdAt', 'duration', 'thumbnail'];
         const filteredUpdates = Object.entries(updates)
-        .filter(([key]) => validColumns.includes(key))
-        .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
+            .filter(([key]) => validColumns.includes(key))
+            .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
 
         if (Object.keys(filteredUpdates).length === 0) return;
 
@@ -65,7 +74,7 @@ export class DatabaseService {
             .map(key => `${key} = ?`)
             .join(', ');
 
-        const values = [...Object.values(filteredUpdates), id]; 
+        const values = [...Object.values(filteredUpdates), id];
 
         await this.db.runAsync(
             `UPDATE videos SET ${setClause} WHERE id = ?`,
@@ -76,10 +85,14 @@ export class DatabaseService {
         if ('cropConfig' in updates) {
             await this.db.runAsync(
                 `UPDATE videos SET cropConfig = ? WHERE id = ?`,
-                [JSON.stringify(updates.cropConfig), id]
+                [updates.cropConfig ? JSON.stringify(updates.cropConfig) : null, id]
             );
         }
-        
+
+    }
+
+    async deleteAllVideos(): Promise<void> {
+        await this.db.runAsync('DELETE FROM videos');
     }
 }
 

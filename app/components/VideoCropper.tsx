@@ -3,25 +3,27 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { useEventListener } from 'expo';
 import { VideoView, useVideoPlayer } from 'expo-video';
 import { useMutation } from '@tanstack/react-query';
-import { CropConfig, VideoProcessingOptions } from '@/types';
+import { CropConfig, Video, VideoProcessingOptions } from '@/types';
 import { VideoProcessor } from '@/utils/videoProcessor';
 import { useRouter } from 'expo-router';
 import { Alert } from 'react-native';
 import Slider from '@react-native-community/slider';
+import useVideoHandlers from '@/hooks/useVideoHandlers';
 
 interface Props {
     uri: string;
-    onCropComplete: (config: CropConfig) => void;
+    video: Video;
     onNext: () => void;
 }
 
-export default function VideoCropper({ uri, onCropComplete, onNext }: Props) {
+export default function VideoCropper({ uri, video, onNext }: Props) {
     const [duration, setDuration] = useState(0);
     const [startTime, setStartTime] = useState(0);
     const [endTime, setEndTime] = useState(5);
     const [currentTime, setCurrentTime] = useState(0);
 
     const router = useRouter();
+    const { handleCropComplete } = useVideoHandlers();
 
     const player = useVideoPlayer(uri, (player) => {
         player.timeUpdateEventInterval = 0.5;
@@ -30,6 +32,7 @@ export default function VideoCropper({ uri, onCropComplete, onNext }: Props) {
     useEventListener(player, 'timeUpdate', (event) => {
         setCurrentTime(event.currentTime);
     });
+    
     useEventListener(player, 'statusChange', (event) => {
         if (event.status === 'readyToPlay' && player.duration) {
             setDuration(player.duration);
@@ -38,24 +41,22 @@ export default function VideoCropper({ uri, onCropComplete, onNext }: Props) {
 
     const cropMutation = useMutation({
         mutationFn: async (config: CropConfig) => {
-            const options: VideoProcessingOptions = {
+            // First process the video
+            const croppedUri = await VideoProcessor.cropVideo(uri, {
                 crop: {
                     startTime: config.startTime,
                     endTime: config.endTime,
                     duration: config.duration
                 }
-            };
-            return VideoProcessor.cropVideo(uri, options);
-        },
-        onSuccess: (croppedUri) => {
-            const cropConfig = {
-                startTime,
-                endTime,
-                duration: endTime - startTime,
+            });
+    
+            // Then handle the cropped video
+            return handleCropComplete(video, {
+                ...config,
                 outputUri: croppedUri
-            };
-
-            onCropComplete(cropConfig);
+            });
+        },
+        onSuccess: (newVideo) => {
             Alert.alert(
                 "Success",
                 "Video cropped successfully!",
@@ -71,7 +72,7 @@ export default function VideoCropper({ uri, onCropComplete, onNext }: Props) {
             );
         },
         onError: (error) => {
-            console.log("Error cropping video:", error);
+            console.error("Error cropping video:", error);
             Alert.alert(
                 "Error",
                 "Failed to crop video. Please try again."
@@ -85,10 +86,10 @@ export default function VideoCropper({ uri, onCropComplete, onNext }: Props) {
         return `${mins}:${secs.toString().padStart(2, '0')}`;
     };
 
-    const handlePlaybackStatusUpdate = ({ currentTime, duration }: any) => {
-        setCurrentTime(currentTime);
-        if (duration) setDuration(duration);
-    };
+    // const handlePlaybackStatusUpdate = ({ currentTime, duration }: any) => {
+    //     setCurrentTime(currentTime);
+    //     if (duration) setDuration(duration);
+    // };
 
     const handleSliderChange = async (value: number) => {
         setStartTime(value);
@@ -97,6 +98,7 @@ export default function VideoCropper({ uri, onCropComplete, onNext }: Props) {
     };
 
     const handleCrop = () => {
+        console.log("Cropping video...");
         cropMutation.mutate({
             startTime,
             endTime,

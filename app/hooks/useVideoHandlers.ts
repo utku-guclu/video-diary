@@ -8,12 +8,12 @@ import { VideoProcessor } from '@/utils/videoProcessor';
 
 const useVideoHandlers = () => {
   const [videoResult, setVideoResult] = useState<ImagePickerResult | null>(null);
-  const { selectedVideoUri, setFormVisible, setSelectedVideoUri, addVideo, cropVideo } = useVideoStore();
+  const { selectedVideoUri, setFormVisible, setSelectedVideoUri, addVideo, deleteAllVideos } = useVideoStore();
   const player = useVideoPlayer(selectedVideoUri || null);
 
   const handleAddVideo = useCallback(async () => {
     // Check permissions
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (status !== 'granted') {
       Alert.alert('Permission needed', 'This app needs access to your media library');
@@ -23,8 +23,7 @@ const useVideoHandlers = () => {
 
     // Pick video
     const result = await ImagePicker.launchImageLibraryAsync({
-      /* I use MediaTypeOptions here instead of MediaType since I can't get it to work  */
-      mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+      mediaTypes: ['videos'],
       allowsEditing: true,
       aspect: [16, 9],
       quality: 1,
@@ -51,7 +50,7 @@ const useVideoHandlers = () => {
           Alert.alert('Invalid file type', 'Please select a valid video file');
           return;
         }
-        
+
         setVideoResult(result);
         setSelectedVideoUri(videoUri);
         setFormVisible(true);
@@ -100,27 +99,51 @@ const useVideoHandlers = () => {
 
   const handleCropComplete = useCallback(async (video: Video, cropConfig: CropConfig) => {
     try {
-      // Generate new thumbnail for cropped segment
-      const thumbnailUri = await VideoProcessor.generateThumbnail(video.uri);
-      
-      // Update video metadata with crop info and new thumbnail
-      const updates = {
-        startTime: cropConfig.startTime,
-        endTime: cropConfig.endTime,
-        cropConfig,
-        thumbnail: thumbnailUri,
-        duration: cropConfig.endTime - cropConfig.startTime
+      // Generate thumbnail for cropped video
+      // const thumbnailUri = await VideoProcessor.generateThumbnail(video.thumbnail);
+
+      // Create new video object for cropped version
+      const newVideo: Video = {
+        id: Date.now().toString(),
+        uri: cropConfig.outputUri!,
+        title: `${video.title} (Cropped)`,
+        description: `Cropped version of ${video.title}`,
+        createdAt: Date.now(),
+        duration: cropConfig.duration,
+        thumbnail: video.thumbnail,
+        cropConfig
       };
-      
-      await cropVideo(video.id, updates);
-      
+
+      // Add cropped video to store
+      addVideo(newVideo);
+
+      return newVideo;
     } catch (error) {
       console.error('Error processing cropped video:', error);
-      Alert.alert('Error', 'Failed to process cropped video');
+      throw error; // Let the mutation handler deal with the error
     }
-  }, [cropVideo]);
+  }, [addVideo]);
 
-  return { handleAddVideo, handleSubmitVideo, handleCropComplete };
+  const handleDeleteVideos = () => {
+    Alert.alert(
+      'Delete Videos',
+      'Are you sure you want to delete all videos? This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            await deleteAllVideos();
+            Alert.alert('Success', 'All videos have been deleted.');
+          }
+        }
+      ]
+    );
+  };
+
+  return { handleAddVideo, handleSubmitVideo, handleCropComplete, handleDeleteVideos };
 };
+
 
 export default useVideoHandlers;

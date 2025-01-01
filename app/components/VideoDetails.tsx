@@ -154,10 +154,6 @@ export default function VideoDetails({ id }: VideoDetailsProps) {
         visible={showCropModal}
         video={video}
         onClose={() => setShowCropModal(false)}
-        onCropComplete={(video, cropConfig) => {
-          updateVideo(video.id, cropConfig);
-          setShowCropModal(false);
-        }}
       />
     </>
   );

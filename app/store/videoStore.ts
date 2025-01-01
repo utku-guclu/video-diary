@@ -17,8 +17,8 @@ interface VideoStore {
   setSelectedVideo: (video: Video | null) => void;
   setCropModalVisible: (visible: boolean) => void;
   addVideo: (video: Video) => void;
-  cropVideo: (id: string, cropConfig: CropConfig) => void;
   deleteVideo: (id: string) => void;
+  deleteAllVideos: () => void;
   updateVideo: (id: string, updates: Partial<Video>) => void;
   loadVideos: () => Promise<void>;
   loadCroppedVideos: () => Promise<Video[]>
@@ -59,9 +59,24 @@ const videoStore = create<VideoStore>((set) => {
     },
 
     // Add video to database
-    addVideo: async (video) => {
-      await dbService.addVideo(video);
-      set(state => ({ videos: [...state.videos, video] }));
+    addVideo: async (video: Video) => {
+      try {
+        await dbService.addVideo(video);
+        set(state => {
+          const newVideos = [...state.videos, video];
+          const newCroppedVideos = video.cropConfig
+            ? [...state.croppedVideos, video]
+            : state.croppedVideos;
+
+          return {
+            videos: newVideos,
+            croppedVideos: newCroppedVideos
+          };
+        });
+      } catch (error) {
+        console.error('Failed to add video:', error);
+        throw error;
+      }
     },
 
     // Delete video from database
@@ -80,25 +95,12 @@ const videoStore = create<VideoStore>((set) => {
       }));
     },
 
-    cropVideo: async (id: string, cropConfig: CropConfig) => {
-      try {
-        await dbService.updateVideo(id, { cropConfig });
-        
-        // Update both videos and croppedVideos states
-        set(state => {
-          const updatedVideos = state.videos.map(video =>
-            video.id === id ? { ...video, cropConfig } : video
-          );
-          return { 
-            videos: updatedVideos,
-            croppedVideos: updatedVideos.filter(video => video.cropConfig)
-          };
-        });
-      } catch (error) {
-        console.error('Error in cropVideo:', error);
-      }
+    // Delete All Videos
+    deleteAllVideos: async () => {
+      await dbService.deleteAllVideos();
+      set({ videos: [], croppedVideos: [] });
     },
-    
+
     setFormVisible: (visible) => set({ isFormVisible: visible }),
     setSelectedVideoUri: (uri) => set({ selectedVideoUri: uri }),
     setSelectedVideo: (video) => set({ selectedVideo: video }),

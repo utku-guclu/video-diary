@@ -39,6 +39,7 @@ export default function Home() {
         />
       ) : (
         <VideoList
+          isProfileTab={false}  
           videos={videos}
           onVideoPress={(video) => {
             router.push(`/details/${video.id}`);
