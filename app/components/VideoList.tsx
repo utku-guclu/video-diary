@@ -2,8 +2,11 @@ import { View, Text, Alert } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import VideoItem from './VideoItem';
 import { Video } from '../types';
-import React from 'react';
+import React, { useState } from 'react';
 import useVideoStore from '@/hooks/useVideoStore';
+
+import EditVideoModal from '@/modals/EditVideoModal';
+import CropVideoModal from '@/modals/CropVideoModal';
 
 interface Props {
     videos: Video[];
@@ -12,6 +15,10 @@ interface Props {
 
 export default function VideoList({ videos, onVideoPress }: Props) {
     const { deleteVideo, updateVideo } = useVideoStore();
+
+    const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
+    const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+    const [isCropModalVisible, setIsCropModalVisible] = useState(false);
 
     const handleDelete = (video: Video) => {
         Alert.alert(
@@ -29,28 +36,16 @@ export default function VideoList({ videos, onVideoPress }: Props) {
     };
 
     const handleEdit = (video: Video) => {
-        // Todo: Implement edit logic here
-        // For example, opening a modal with form
-        Alert.prompt(
-            "Edit Video Title",
-            "Enter new title",
-            [
-                { text: "Cancel", style: "cancel" },
-                {
-                    text: "Update",
-                    onPress: (newTitle?: string) => {
-                        if (newTitle) {
-                            updateVideo(video.id, { title: newTitle });
-                        }
-                    }
-                }
-            ],
-            "plain-text",
-            video.title
-        );
+        setSelectedVideo(video);
+        setIsEditModalVisible(true);
     };
 
+    const handleCrop = (video: Video) => {
+        setSelectedVideo(video);
+        setIsCropModalVisible(true);
+    };
     return (
+           <>
         <FlashList
             data={videos}
             renderItem={({ item }) => (
@@ -59,6 +54,7 @@ export default function VideoList({ videos, onVideoPress }: Props) {
                     onPress={() => onVideoPress(item)} 
                     onDelete={() => handleDelete(item)}
                     onEdit={() => handleEdit(item)} 
+                    onCrop={() => handleCrop(item)}
                 />
             )}
             estimatedItemSize={100}
@@ -73,5 +69,38 @@ export default function VideoList({ videos, onVideoPress }: Props) {
                 </View>
             }
         />
+                {selectedVideo && (
+                <>
+                    <EditVideoModal
+                        visible={isEditModalVisible}
+                        video={selectedVideo}
+                        onClose={() => {
+                            setIsEditModalVisible(false);
+                            setSelectedVideo(null);
+                        }}
+                        onSave={(updatedVideo) => {
+                            updateVideo(selectedVideo.id, updatedVideo);
+                            setIsEditModalVisible(false);
+                            setSelectedVideo(null);
+                        }}
+                    />
+
+                    <CropVideoModal
+                        visible={isCropModalVisible}
+                        video={selectedVideo}
+                        onClose={() => {
+                            setIsCropModalVisible(false);
+                            setSelectedVideo(null);
+                        }}
+                        onCropComplete={(video, cropConfig) => {
+                            // Handle crop completion
+                            updateVideo(video.id, cropConfig);
+                            setIsCropModalVisible(false);
+                            setSelectedVideo(null);
+                        }}
+                    />
+                </>
+            )}
+        </>
     );
 }

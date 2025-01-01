@@ -3,12 +3,12 @@ import { Alert, Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useVideoPlayer } from 'expo-video';
 import { useVideoStore } from './useVideoStore';
-import { ImagePickerResult, Metadata } from '@/types';
+import { CropConfig, ImagePickerResult, Metadata, Video } from '@/types';
 import { VideoProcessor } from '@/utils/videoProcessor';
 
 const useVideoHandlers = () => {
   const [videoResult, setVideoResult] = useState<ImagePickerResult | null>(null);
-  const { selectedVideoUri, setFormVisible, setSelectedVideoUri, addVideo } = useVideoStore();
+  const { selectedVideoUri, setFormVisible, setSelectedVideoUri, addVideo, cropVideo } = useVideoStore();
   const player = useVideoPlayer(selectedVideoUri || null);
 
   const handleAddVideo = useCallback(async () => {
@@ -97,7 +97,30 @@ const useVideoHandlers = () => {
     }
   }, [selectedVideoUri, player, addVideo, setFormVisible, setSelectedVideoUri]);
 
-  return { handleAddVideo, handleSubmitVideo };
+
+  const handleCropComplete = useCallback(async (video: Video, cropConfig: CropConfig) => {
+    try {
+      // Generate new thumbnail for cropped segment
+      const thumbnailUri = await VideoProcessor.generateThumbnail(video.uri);
+      
+      // Update video metadata with crop info and new thumbnail
+      const updates = {
+        startTime: cropConfig.startTime,
+        endTime: cropConfig.endTime,
+        cropConfig,
+        thumbnail: thumbnailUri,
+        duration: cropConfig.endTime - cropConfig.startTime
+      };
+      
+      await cropVideo(video.id, updates);
+      
+    } catch (error) {
+      console.error('Error processing cropped video:', error);
+      Alert.alert('Error', 'Failed to process cropped video');
+    }
+  }, [cropVideo]);
+
+  return { handleAddVideo, handleSubmitVideo, handleCropComplete };
 };
 
 export default useVideoHandlers;

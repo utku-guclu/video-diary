@@ -7,6 +7,7 @@ export interface Video {
   description: string;
   duration: number;
   thumbnail: string;
+  cropConfig?: CropConfig; 
 }
 
 export interface VideoAsset {
@@ -38,12 +39,13 @@ export interface CropConfig {
   startTime: number;
   endTime: number;
   duration: number;
+  outputUri?: string;
 }
 
 export interface VideoProcessingOptions {
     crop?: CropConfig;
     quality?: number;
-    format?: 'mp4' | 'mov';
+    format?: VideoExtension;
 }
 
 export type VideoExtension = 'mp4' | 'mov' | 'avi' | 'mkv' | 'wmv' | 'flv' | 'webm';

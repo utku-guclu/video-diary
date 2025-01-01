@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Modal } from 'react-native';
+import { View, Modal, TouchableOpacity, Text } from 'react-native';
 import { Video } from '@/types';
 import MetadataForm from '@/components/MetaDataForm';
 
@@ -21,6 +21,9 @@ export default function EditVideoModal({ visible, video, onClose, onSave }: Prop
                         onClose();
                     }}
                 />
+                <TouchableOpacity onPress={onClose} className="p-4">
+                    <Text>Cancel</Text>
+                </TouchableOpacity>
             </View>
         </Modal>
     );

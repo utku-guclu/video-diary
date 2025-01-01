@@ -15,7 +15,8 @@ export class DatabaseService {
                 description TEXT,
                 createdAt INTEGER NOT NULL,
                 duration INTEGER NOT NULL,
-                thumbnail TEXT NOT NULL
+                thumbnail TEXT NOT NULL,
+                cropConfig TEXT
             )
         `);
     }
@@ -53,14 +54,32 @@ export class DatabaseService {
     }
 
     async updateVideo(id: string, updates: Partial<Video>): Promise<void> {
-        const setClause = Object.keys(updates)
+        const validColumns = ['uri', 'title', 'description', 'createdAt', 'duration', 'thumbnail'];
+        const filteredUpdates = Object.entries(updates)
+        .filter(([key]) => validColumns.includes(key))
+        .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
+
+        if (Object.keys(filteredUpdates).length === 0) return;
+
+        const setClause = Object.keys(filteredUpdates)
             .map(key => `${key} = ?`)
             .join(', ');
 
+        const values = [...Object.values(filteredUpdates), id]; 
+
         await this.db.runAsync(
             `UPDATE videos SET ${setClause} WHERE id = ?`,
-            [...Object.values(updates), id]
+            values as SQLite.SQLiteBindParams
         );
+
+        // Handle cropConfig separately if present
+        if ('cropConfig' in updates) {
+            await this.db.runAsync(
+                `UPDATE videos SET cropConfig = ? WHERE id = ?`,
+                [JSON.stringify(updates.cropConfig), id]
+            );
+        }
+        
     }
 }
 

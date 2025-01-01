@@ -3,16 +3,27 @@ import { Tabs } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useVideoStore } from '@/hooks/useVideoStore';
 import { TabButton } from '@/components/TabButton';
+import { useTheme } from '@/providers/ThemeProvider';
 
 export default function TabLayout() {
-  {/* Hooks */ }
-  const {
-    isFormVisible,
-    setFormVisible,
-  } = useVideoStore();
+  const { isFormVisible, setFormVisible } = useVideoStore();
+  const theme = useTheme();
+
   return (
-    <Tabs>
-     <Tabs.Screen
+    <Tabs
+      screenOptions={{
+        tabBarStyle: {
+          backgroundColor: theme.colors.background,
+        },
+        tabBarActiveTintColor: theme.colors.primary,
+        tabBarInactiveTintColor: theme.colors.text,
+        headerStyle: {
+          backgroundColor: theme.colors.background,
+        },
+        headerTintColor: theme.colors.text,
+      }}
+    >
+      <Tabs.Screen
         name="index"
         options={{
           title: 'Home',

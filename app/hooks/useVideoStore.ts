@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import videoStore from '../store/videoStore';
-import { Video } from '../types';
+import { Video, CropConfig } from '../types';
 
 export const useVideoStore = () => {
   const store = videoStore();
@@ -17,6 +17,10 @@ export const useVideoStore = () => {
     store.updateVideo(id, updates);
   }, []);
 
+  const handleCropVideo = useCallback((id: string, cropConfig: CropConfig) => {
+    store.updateVideo(id, { cropConfig });
+  }, []);
+
   const handleFormVisibility = useCallback((visible: boolean) => {
     store.setFormVisible(visible);
   }, []);
@@ -29,19 +33,27 @@ export const useVideoStore = () => {
     store.loadVideos();
   }, []);
 
+  const handleLoadCroppedVideos = useCallback(() => {
+   store.loadCroppedVideos();
+  }, []);
+
   return {
     // State
     videos: store.videos,
+    croppedVideos: store.croppedVideos,
     isFormVisible: store.isFormVisible,
     selectedVideoUri: store.selectedVideoUri,
+  
     
     // Actions
     addVideo: handleAddVideo,
     deleteVideo: handleDeleteVideo,
     updateVideo: handleUpdateVideo,
+    cropVideo: handleCropVideo,
     setFormVisible: handleFormVisibility,
     setSelectedVideoUri: handleSelectedVideo,
     loadVideos: handleLoadVideos,
+    loadCroppedVideos: handleLoadCroppedVideos
   };
 };
 

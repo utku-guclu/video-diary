@@ -20,6 +20,7 @@ export default function CropVideoModal({ visible, video, onClose, onCropComplete
                         onCropComplete(video, cropConfig);
                         onClose();
                     }}
+                    onNext={onClose}
                 />
                 <TouchableOpacity onPress={onClose} className="p-4">
                     <Text>Cancel</Text>

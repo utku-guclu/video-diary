@@ -8,6 +8,7 @@ interface Props {
   onPress: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onCrop: () => void;
 }
 
 export default function VideoItem({ video, onPress, onEdit, onDelete }: Props) {
@@ -48,12 +49,12 @@ export default function VideoItem({ video, onPress, onEdit, onDelete }: Props) {
 
 
       {/* Action Icons */}
-      <View className="flex items-center space-x-4 gap-2">
+      <View className="flex items-center space-x-4 gap-4">
         <TouchableOpacity onPress={handleEditPress}>
           <Feather name="edit" size={20} color="#00FF00" />
         </TouchableOpacity>
         <TouchableOpacity onPress={handleDeletePress}>
-          <Feather name="trash" size={20} color="#EF4444" />
+          <Feather name="trash-2" size={20} color="#EF4444" />
         </TouchableOpacity>
       </View>
     </TouchableOpacity>
