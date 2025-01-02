@@ -48,7 +48,28 @@ export interface VideoProcessingOptions {
     format?: VideoExtension;
 }
 
+export interface VideoDetailsProps {
+  id: string | string[];
+}
+
 export type VideoExtension = 'mp4' | 'mov' | 'avi' | 'mkv' | 'wmv' | 'flv' | 'webm';
+
+// Theme
+export type Theme = {
+  colors: {
+    background: string;
+    secondaryBackground?: string;
+    text: string;
+    primary: string;
+    secondary?: string;
+    accent?: string;
+    surface?: string;
+    success?: string;
+    warning?: string;
+    error?: string;
+    muted?: string;
+  }
+}
 
 const types = {};
 export default types;

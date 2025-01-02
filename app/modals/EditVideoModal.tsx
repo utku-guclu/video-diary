@@ -1,7 +1,11 @@
 import React from 'react';
 import { View, Modal, TouchableOpacity, Text } from 'react-native';
 import { Video } from '@/types';
+
+import { useTheme } from '@/providers/ThemeProvider';
+
 import MetadataForm from '@/components/MetaDataForm';
+import CustomButton from '@/components/CustomButton';
 
 interface Props {
     visible: boolean;
@@ -11,9 +15,13 @@ interface Props {
 }
 
 export default function EditVideoModal({ visible, video, onClose, onSave }: Props) {
+    const theme = useTheme();
+
     return (
         <Modal visible={visible} animationType="slide">
-            <View className="flex-1 bg-white">
+            <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
+                <CustomButton text="Close" onClose={onClose} />
+
                 <MetadataForm
                     initialValues={video}
                     onSubmit={(metadata) => {
@@ -21,9 +29,6 @@ export default function EditVideoModal({ visible, video, onClose, onSave }: Prop
                         onClose();
                     }}
                 />
-                <TouchableOpacity onPress={onClose} className="p-4">
-                    <Text>Cancel</Text>
-                </TouchableOpacity>
             </View>
         </Modal>
     );

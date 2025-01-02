@@ -1,9 +1,11 @@
 import React from 'react';
-import { View, Text, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Keyboard } from 'react-native';
 import { Metadata } from '@/types';
 import { metadataSchema } from '@/schemas/metadata.schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, Controller } from 'react-hook-form';
+import { useTheme } from '@/providers/ThemeProvider';
+import { Ionicons } from '@expo/vector-icons';
 
 interface Props {
   onSubmit: (metadata: Metadata) => void;
@@ -11,31 +13,57 @@ interface Props {
 }
 
 export default function MetadataForm({ onSubmit, initialValues }: Props) {
-  const { control, handleSubmit, formState: { errors } } = useForm({
+  const theme = useTheme();
+  const { control, handleSubmit, formState: { errors, isValid } } = useForm({
     resolver: zodResolver(metadataSchema),
-    defaultValues: initialValues
+    defaultValues: initialValues,
+    mode: 'onChange'
   });
 
   const onSubmitForm = (data: Metadata) => {
+    Keyboard.dismiss();
     onSubmit(data);
   };
 
   return (
-    <View className="p-4 bg-white flex-1">
+    <View 
+      className="p-6 flex-1" 
+      style={{ backgroundColor: theme.colors.background }}
+    >
       <Controller
         control={control}
         name="title"
         render={({ field: { onChange, value } }) => (
-          <View className="mb-4">
-            <Text className="text-gray-700 mb-2 font-medium">Title</Text>
+          <View className="mb-6">
+            <View className="flex-row items-center mb-2">
+              <Ionicons name="videocam" size={20} color={theme.colors.primary} />
+              <Text 
+                className="ml-2 font-medium" 
+                style={{ color: theme.colors.text }}
+              >
+                Title
+              </Text>
+            </View>
             <TextInput
               value={value}
               onChangeText={onChange}
               placeholder="Enter video title"
-              className="border border-gray-300 rounded-lg p-3"
+              placeholderTextColor={theme.colors.muted}
+              className="p-4 rounded-xl"
+              style={{
+                backgroundColor: theme.colors.surface,
+                color: theme.colors.text,
+                borderWidth: 1,
+                borderColor: errors.title ? theme.colors.error : theme.colors.muted
+              }}
             />
             {errors.title && (
-              <Text className="text-red-500 mt-1">{errors.title.message}</Text>
+              <Text 
+                className="mt-2 ml-2" 
+                style={{ color: theme.colors.error }}
+              >
+                {errors.title.message}
+              </Text>
             )}
           </View>
         )}
@@ -45,18 +73,40 @@ export default function MetadataForm({ onSubmit, initialValues }: Props) {
         control={control}
         name="description"
         render={({ field: { onChange, value } }) => (
-          <View className="mb-4">
-            <Text className="text-gray-700 mb-2 font-medium">Description</Text>
+          <View className="mb-6">
+            <View className="flex-row items-center mb-2">
+              <Ionicons name="document-text" size={20} color={theme.colors.primary} />
+              <Text 
+                className="ml-2 font-medium" 
+                style={{ color: theme.colors.text }}
+              >
+                Description
+              </Text>
+            </View>
             <TextInput
               value={value}
               onChangeText={onChange}
               placeholder="Enter video description"
+              placeholderTextColor={theme.colors.muted}
               multiline
               numberOfLines={4}
-              className="border border-gray-300 rounded-lg p-3"
+              className="p-4 rounded-xl"
+              style={{
+                backgroundColor: theme.colors.surface,
+                color: theme.colors.text,
+                borderWidth: 1,
+                borderColor: errors.description ? theme.colors.error : theme.colors.muted,
+                height: 120,
+                textAlignVertical: 'top'
+              }}
             />
             {errors.description && (
-              <Text className="text-red-500 mt-1">{errors.description.message}</Text>
+              <Text 
+                className="mt-2 ml-2" 
+                style={{ color: theme.colors.error }}
+              >
+                {errors.description.message}
+              </Text>
             )}
           </View>
         )}
@@ -64,9 +114,15 @@ export default function MetadataForm({ onSubmit, initialValues }: Props) {
 
       <TouchableOpacity
         onPress={handleSubmit(onSubmitForm)}
-        className="bg-black py-3 rounded-lg"
+        className="py-4 rounded-xl"
+        style={{ 
+          backgroundColor: isValid ? theme.colors.primary : theme.colors.muted,
+          opacity: isValid ? 1 : 0.7
+        }}
       >
-        <Text className="text-white text-center font-semibold">Save Details</Text>
+        <Text className="text-center font-semibold text-white">
+          Save Details
+        </Text>
       </TouchableOpacity>
     </View>
   );

@@ -1,20 +1,33 @@
 import React, { createContext, useContext } from 'react';
 import { useThemeStore } from '../store/themeStore';
 import { lightTheme, darkTheme } from '../theme';
+import { Theme } from '@/types';
 
-type Theme = {
-  colors: {
-    background: string;
-    text: string;
-    primary: string;
-  }
+interface ExtendedTheme extends Theme {
+  fonts: {
+    regular: string;
+  };
 }
 
-const ThemeContext = createContext<Theme>(lightTheme);
+const lightThemeWithFonts: ExtendedTheme = {
+  ...lightTheme,
+  fonts: {
+    regular: 'Pacifico_400Regular',
+  }
+};
+
+const darkThemeWithFonts: ExtendedTheme = {
+  ...darkTheme,
+  fonts: {
+    regular: 'Pacifico_400Regular',
+  }
+};
+
+const ThemeContext = createContext<ExtendedTheme>(lightThemeWithFonts);
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const { colorScheme } = useThemeStore();
-  const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
+  const theme = colorScheme === 'dark' ? darkThemeWithFonts : lightThemeWithFonts;
 
   return (
     <ThemeContext.Provider value={theme}>

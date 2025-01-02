@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Video, CropConfig } from '../types';
+import { Video } from '../types';
 
 import { dummyVideos } from '../temp/dummyVideos';
 

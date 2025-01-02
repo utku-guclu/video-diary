@@ -1,7 +1,11 @@
 import * as VideoThumbnails from 'expo-video-thumbnails';
 import * as FileSystem from 'expo-file-system';
+
 import { FFmpegKit } from 'ffmpeg-kit-react-native';
-import { FileInfo, VideoProcessingOptions } from '@/types';
+
+import { FileInfo, VideoProcessingOptions, VideoExtension } from '@/types';
+
+import getFileExtension from '@/utils/getFileExtension';
 
 export const VideoProcessor = {
     async generateThumbnail(videoUri: string): Promise<string> {
@@ -14,8 +18,12 @@ export const VideoProcessor = {
 
     async validateVideo(videoUri: string) {
         const fileInfo = await FileSystem.getInfoAsync(videoUri) as FileInfo;
-        const fileExtension = videoUri.split('.').pop()?.toLowerCase()!;
-        const validVideoExtensions = ['mp4', 'mov', 'avi', 'wmv', 'flv', 'webm'];
+        const fileExtension = getFileExtension(videoUri);
+        const validVideoExtensions: VideoExtension[] = ['mp4', 'mov', 'avi', 'mkv', 'wmv', 'flv', 'webm'];
+
+        if (!validVideoExtensions.includes(fileExtension as VideoExtension)) {
+            throw new Error(`Invalid video extension: ${fileExtension}`);
+        }
 
         return {
             exists: fileInfo.exists,

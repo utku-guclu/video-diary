@@ -1,14 +1,22 @@
 import { Suspense } from 'react';
-import { View, Text } from 'react-native';
+import { View } from 'react-native';
 import React from 'react';
 import CroppedVideosList from '@/components/CroppedVideoList';
+import LoadingAnimation from '@/components/LoadingAnimation';
+import Header from '@/components/Header';
+import { useTheme } from '@/providers/ThemeProvider';
 
 export default function Profile() {
+  const theme = useTheme();
   return (
-    <View style={{ flex: 1 }}>
-      <Suspense fallback={<Text>Loading videos...</Text>}>
+    <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
+      <Header title="Video Diary" />
+      <Suspense 
+        fallback={<LoadingAnimation isProfile={true} />}
+      >
         <CroppedVideosList />
       </Suspense>
     </View>
   );
 }
+

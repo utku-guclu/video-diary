@@ -1,22 +1,74 @@
+import React, { useState, useEffect, Suspense } from 'react';
 import { View, Text, Alert } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import VideoItem from './VideoItem';
 import { Video } from '../types';
-import React, { useState } from 'react';
 import useVideoStore from '@/hooks/useVideoStore';
-
 import EditVideoModal from '@/modals/EditVideoModal';
 import CropVideoModal from '@/modals/CropVideoModal';
+import { useTheme } from '@/providers/ThemeProvider';
+import { Ionicons } from '@expo/vector-icons';
+import { VideoSkeleton } from './VideoSkeleton';
 
 interface Props {
     videos: Video[];
-    isProfileTab?: boolean;
+    isProfileTab: boolean;
     onVideoPress: (video: Video) => void;
 }
 
-export default function VideoList({ videos, onVideoPress, isProfileTab }: Props) {
-    const { deleteVideo, updateVideo } = useVideoStore();
+interface VideoListContentProps extends Props {
+    onDelete: (video: Video) => void;
+    onEdit: (video: Video) => void;
+    onCrop: (video: Video) => void;
+}
 
+const VideoListContent = ({
+    videos,
+    onVideoPress,
+    isProfileTab,
+    onDelete,
+    onEdit,
+    onCrop
+}: VideoListContentProps) => (
+    <FlashList
+        data={videos}
+        renderItem={({ item }) => (
+            <VideoItem
+                video={item}
+                onPress={() => onVideoPress(item)}
+                onDelete={() => onDelete(item)}
+                onEdit={() => onEdit(item)}
+                onCrop={() => onCrop(item)}
+            />
+        )}
+        estimatedItemSize={100}
+        ListEmptyComponent={
+            <EmptyState isProfileTab={isProfileTab} />
+        }
+        contentContainerStyle={{ paddingHorizontal: 16 }}
+    />
+);
+
+const EmptyState = ({ isProfileTab }: { isProfileTab: boolean }) => {
+    const theme = useTheme();
+    return (
+        <View className="flex-1 items-center justify-center p-8">
+            <Ionicons
+                name={isProfileTab ? "videocam-outline" : "add-circle-outline"}
+                size={64}
+                color={theme.colors.muted}
+                style={{ marginBottom: 20 }}
+            />
+            <Text style={{ color: theme.colors.text }}>
+                {isProfileTab ? "Your Video Diary" : "Your Video Collection"}
+            </Text>
+        </View>
+    );
+};
+
+export default function VideoList({ videos, onVideoPress, isProfileTab }: Props) {
+    const theme = useTheme();
+    const { deleteVideo, updateVideo } = useVideoStore();
     const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
     const [isEditModalVisible, setIsEditModalVisible] = useState(false);
     const [isCropModalVisible, setIsCropModalVisible] = useState(false);
@@ -36,42 +88,26 @@ export default function VideoList({ videos, onVideoPress, isProfileTab }: Props)
         );
     };
 
-    const handleEdit = (video: Video) => {
-        setSelectedVideo(video);
-        setIsEditModalVisible(true);
-    };
-
-    const handleCrop = (video: Video) => {
-        setSelectedVideo(video);
-        setIsCropModalVisible(true);
-    };
     return (
-        <>
-            <FlashList
-                data={videos}
-                renderItem={({ item }) => (
-                    <VideoItem
-                        video={item}
-                        onPress={() => onVideoPress(item)}
-                        onDelete={() => handleDelete(item)}
-                        onEdit={() => handleEdit(item)}
-                        onCrop={() => handleCrop(item)}
-                    />
-                )}
-                estimatedItemSize={100}
-                ListEmptyComponent={
-                    <View className="flex-1 items-center justify-center p-8">
-                        <Text className="text-2xl font-semibold text-gray-800 mb-2">
-                            {isProfileTab ? "Your Video Diary" : "Your Video Collection"}
-                        </Text>
-                        <Text className="text-gray-500 text-center text-lg">
-                            {isProfileTab
-                                ? "No cropped videos yet. Try cropping a video from your collection!"
-                                : "No videos yet. Start by adding one!"}
-                        </Text>
-                    </View>
-                }
-            />
+        <View style={{ backgroundColor: theme.colors.background, flex: 1 }}>
+            <Suspense fallback={<VideoSkeleton count={3} />}>
+                <VideoListContent
+                    videos={videos}
+                    onVideoPress={onVideoPress}
+                    isProfileTab={isProfileTab}
+                    onDelete={handleDelete}
+                    onEdit={(video) => {
+                        setSelectedVideo(video);
+                        setIsEditModalVisible(true);
+                    }}
+                    onCrop={(video) => {
+                        setSelectedVideo(video);
+                        setIsCropModalVisible(true);
+                    }}
+                />
+            </Suspense>
+            
+            {/* If a video is selected, show the edit and crop modals */}
             {selectedVideo && (
                 <>
                     <EditVideoModal
@@ -87,7 +123,6 @@ export default function VideoList({ videos, onVideoPress, isProfileTab }: Props)
                             setSelectedVideo(null);
                         }}
                     />
-
                     <CropVideoModal
                         visible={isCropModalVisible}
                         video={selectedVideo}
@@ -98,6 +133,6 @@ export default function VideoList({ videos, onVideoPress, isProfileTab }: Props)
                     />
                 </>
             )}
-        </>
+        </View>
     );
 }

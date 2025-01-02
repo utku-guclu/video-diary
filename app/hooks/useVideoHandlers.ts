@@ -4,7 +4,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useVideoPlayer } from 'expo-video';
 import { useVideoStore } from './useVideoStore';
 import { CropConfig, ImagePickerResult, Metadata, Video } from '@/types';
-import { VideoProcessor } from '@/utils/videoProcessor';
+import { VideoProcessor } from '@/services/videoProcessor';
 
 const useVideoHandlers = () => {
   const [videoResult, setVideoResult] = useState<ImagePickerResult | null>(null);
@@ -12,6 +12,12 @@ const useVideoHandlers = () => {
   const player = useVideoPlayer(selectedVideoUri || null);
 
   const handleAddVideo = useCallback(async () => {
+    // Check platform
+    if (Platform.OS === 'web') {
+      Alert.alert('Not supported', 'This feature is not supported on web');
+      return;
+    }
+
     // Check permissions
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 

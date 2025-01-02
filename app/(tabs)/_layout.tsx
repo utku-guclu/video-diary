@@ -4,6 +4,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useVideoStore } from '@/hooks/useVideoStore';
 import { TabButton } from '@/components/TabButton';
 import { useTheme } from '@/providers/ThemeProvider';
+import { Platform } from 'react-native';
 
 export default function TabLayout() {
   const { isFormVisible, setFormVisible } = useVideoStore();
@@ -13,14 +14,28 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarStyle: {
-          backgroundColor: theme.colors.background,
+          backgroundColor: theme.colors.surface,
+          borderTopWidth: 0,
+          elevation: 0,
+          height: Platform.OS === 'ios' ? 90 : 70,
+          paddingTop: Platform.OS === 'ios' ? 30 : 10,
         },
         tabBarActiveTintColor: theme.colors.primary,
-        tabBarInactiveTintColor: theme.colors.text,
+        tabBarInactiveTintColor: theme.colors.muted,
         headerStyle: {
-          backgroundColor: theme.colors.background,
+          backgroundColor: theme.colors.surface,
+          elevation: 0,
+          shadowOpacity: 0,
         },
         headerTintColor: theme.colors.text,
+        headerTitleStyle: {
+          fontWeight: '600',
+          fontSize: 18,
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: '500',
+        },
       }}
     >
       <Tabs.Screen
@@ -30,7 +45,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons
               name={isFormVisible ? "arrow-back" : "home"}
-              size={size}
+              size={size + 2}
               color={color}
             />
           ),
@@ -51,7 +66,7 @@ export default function TabLayout() {
         options={{
           title: 'Profile',
           tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="person" size={size} color={color} />
+            <MaterialIcons name="person" size={size + 2} color={color} />
           ),
         }}
       />
@@ -60,7 +75,7 @@ export default function TabLayout() {
         options={{
           title: 'Settings',
           tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="settings" size={size} color={color} />
+            <MaterialIcons name="settings" size={size + 2} color={color} />
           ),
         }}
       />

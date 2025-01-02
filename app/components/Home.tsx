@@ -1,6 +1,7 @@
 {/* React */ }
-import React, { useEffect } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
+import { FAB } from 'react-native-paper';
 
 {/* Expo */ }
 import { router } from 'expo-router';
@@ -9,10 +10,12 @@ import { router } from 'expo-router';
 import Header from './Header';
 import MetadataForm from './MetaDataForm';
 import VideoList from './VideoList';
+import LoadingAnimation from './LoadingAnimation';
 
 {/* Hooks */ }
 import { useVideoStore } from '@/hooks/useVideoStore';
 import useVideoHandlers from '@/hooks/useVideoHandlers';
+import { useTheme } from '@/providers/ThemeProvider';
 
 export default function Home() {
   const {
@@ -23,14 +26,16 @@ export default function Home() {
 
   const { handleAddVideo, handleSubmitVideo } = useVideoHandlers();
 
+  const theme = useTheme();
+
   useEffect(() => {
     loadVideos();
   }, []);
 
   return (
-    <View className="flex-1 bg-gray-50">
+    <View className="flex-1 bg-gray-50" style={{ backgroundColor: theme.colors.background }}>
       {/* Header */}
-      <Header />
+      <Header title="Video Collection"/>
       {/* Content */}
       {isFormVisible ? (
         <MetadataForm
@@ -38,24 +43,30 @@ export default function Home() {
           initialValues={{ title: '', description: '' }}
         />
       ) : (
-        <VideoList
-          isProfileTab={false}  
-          videos={videos}
-          onVideoPress={(video) => {
-            router.push(`/details/${video.id}`);
-          }}
-        />
+        <Suspense fallback={<LoadingAnimation isProfile={false} />}>
+          <VideoList
+            isProfileTab={false}
+            videos={videos}
+            onVideoPress={(video) => {
+              router.push(`/details/${video.id}`);
+            }}
+          />
+        </Suspense>
       )}
 
       {/* Add Button */}
       {!isFormVisible && (
-        <TouchableOpacity
-          style={{ backgroundColor: 'rgba(128, 128, 128, 0.5)' }}
-          className="absolute bottom-8 right-8 bg-black w-14 h-14 rounded-full items-center justify-center"
+        <FAB
+          icon="plus"
+          style={{
+            position: 'absolute',
+            margin: 16,
+            right: 0,
+            bottom: 0,
+            backgroundColor: theme.colors.primary,
+          }}
           onPress={handleAddVideo}
-        >
-          <Text className="text-white text-3xl font-bold">+</Text>
-        </TouchableOpacity>
+        />
       )}
     </View>
   );

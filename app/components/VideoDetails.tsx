@@ -14,9 +14,8 @@ import { useOrientation } from '@/hooks/useOrientation';
 
 import { useTheme } from '@/providers/ThemeProvider';
 
-interface VideoDetailsProps {
-  id: string | string[];
-}
+import { VideoDetailsProps } from '@/types';
+
 
 export default function VideoDetails({ id }: VideoDetailsProps) {
   const theme = useTheme();
@@ -93,12 +92,17 @@ export default function VideoDetails({ id }: VideoDetailsProps) {
             <View className="flex-row justify-between items-center">
               <Text style={{ color: theme.colors.text }} className="text-2xl font-bold">{video.title}</Text>
               <View className="flex-row space-x-4 gap-4">
+                {/* CROP */}
                 <TouchableOpacity onPress={() => setShowCropModal(true)}>
                   <Feather name="crop" size={24} color={theme.colors.text} />
                 </TouchableOpacity>
+
+                {/* EDIT */}
                 <TouchableOpacity onPress={() => setShowEditModal(true)}>
-                  <Feather name="edit-2" size={24} color={theme.colors.text} />
+                  <Feather name="edit" size={24} color={theme.colors.text} />
                 </TouchableOpacity>
+
+                {/* DELETE */}
                 <TouchableOpacity
                   onPress={() => {
                     Alert.alert(
@@ -115,7 +119,7 @@ export default function VideoDetails({ id }: VideoDetailsProps) {
                     );
                   }}
                 >
-                  <Feather name="trash-2" size={24} color="#EF4444" />
+                  <Feather name="trash" size={24} color="#EF4444" />
                 </TouchableOpacity>
               </View>
             </View>
@@ -132,7 +136,7 @@ export default function VideoDetails({ id }: VideoDetailsProps) {
             </View>
 
             <View className="pt-2">
-              <Text className="text-base text-gray-700 leading-relaxed">
+              <Text style={{ color: theme.colors.text }} className="text-base text-gray-700 leading-relaxed">
                 {video.description}
               </Text>
             </View>
