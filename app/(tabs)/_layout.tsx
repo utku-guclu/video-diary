@@ -4,7 +4,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useVideoStore } from '@/hooks/useVideoStore';
 import { TabButton } from '@/components/TabButton';
 import { useTheme } from '@/providers/ThemeProvider';
-import { Platform } from 'react-native';
+import { createTabScreenOptions } from '@/components/TabScreenOptions';
 
 export default function TabLayout() {
   const { isFormVisible, setFormVisible } = useVideoStore();
@@ -12,31 +12,7 @@ export default function TabLayout() {
 
   return (
     <Tabs
-      screenOptions={{
-        tabBarStyle: {
-          backgroundColor: theme.colors.surface,
-          borderTopWidth: 0,
-          elevation: 0,
-          height: Platform.OS === 'ios' ? 90 : 70,
-          paddingTop: Platform.OS === 'ios' ? 30 : 10,
-        },
-        tabBarActiveTintColor: theme.colors.primary,
-        tabBarInactiveTintColor: theme.colors.muted,
-        headerStyle: {
-          backgroundColor: theme.colors.surface,
-          elevation: 0,
-          shadowOpacity: 0,
-        },
-        headerTintColor: theme.colors.text,
-        headerTitleStyle: {
-          fontWeight: '600',
-          fontSize: 18,
-        },
-        tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: '500',
-        },
-      }}
+      screenOptions={createTabScreenOptions(theme)}
     >
       <Tabs.Screen
         name="index"
@@ -44,7 +20,7 @@ export default function TabLayout() {
           title: 'Home',
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons
-              name={isFormVisible ? "arrow-back" : "home"}
+              name={isFormVisible ? "arrow-back" : "video-library"}
               size={size + 2}
               color={color}
             />
@@ -64,9 +40,9 @@ export default function TabLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
+          title: 'Collection',
           tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="person" size={size + 2} color={color} />
+            <MaterialIcons name="video-stable" size={size + 2} color={color} />
           ),
         }}
       />

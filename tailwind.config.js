@@ -5,7 +5,11 @@ module.exports = {
   presets: [require("nativewind/preset")],
   darkMode: 'class',
   theme: {
-    extend: {},
+    extend: {
+       fontFamily: {
+        sans: ['Pacifico_400Regular', 'Arial', 'sans-serif'],
+      },
+    },
     colors: {
       // Create a custom color that uses a CSS custom value
       primary: "rgb(var(--color-values) / <alpha-value>)",

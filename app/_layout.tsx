@@ -1,24 +1,35 @@
 import { Stack } from 'expo-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ThemeProvider, useTheme } from './providers/ThemeProvider';
-import { Platform } from 'react-native';
 
 import { 
   useFonts,
   Pacifico_400Regular,
 } from '@expo-google-fonts/pacifico';
 
+import * as SplashScreen from 'expo-splash-screen';
+
+import { createBaseScreenOptions } from './components/BaseScreenOptions';
+
+SplashScreen.preventAutoHideAsync();
+
 {/* Initialize query client */}
 const queryClient = new QueryClient();
 
 {/* Load fonts */}
 export default function RootLayout() {
-   const [fontsLoaded] = useFonts({
+   const [loaded, error] = useFonts({
     Pacifico_400Regular,
   });
 
-  if (!fontsLoaded) {
+  useEffect(() => {
+    if (loaded || error) {
+      SplashScreen.hideAsync();
+    }
+  }, [loaded, error]);
+
+  if (!loaded && !error) {
     return null;
   }
 
@@ -36,22 +47,7 @@ function ThemedStack() {
 
   return (
     <Stack
-      screenOptions={{
-        contentStyle: {
-          backgroundColor: theme.colors.background,
-        },
-        headerStyle: {
-          backgroundColor: theme.colors.surface,
-        },
-        headerTintColor: theme.colors.primary,
-        headerTitleStyle: {
-          color: theme.colors.text,
-          fontSize: 18,
-          fontWeight: '600',
-        },
-        animation: Platform.OS === 'ios' ? 'default' : 'slide_from_right',
-        animationDuration: 200,
-      }}
+      screenOptions={createBaseScreenOptions(theme)}
     >
       <Stack.Screen 
         name="(tabs)" 
@@ -70,6 +66,7 @@ function ThemedStack() {
             color: theme.colors.text,
             fontSize: 18,
             fontWeight: '600',
+            fontFamily: theme.fonts.regular,
           },
           animation: 'slide_from_right',
           animationDuration: 200,

@@ -35,7 +35,7 @@ export default function Home() {
   return (
     <View className="flex-1 bg-gray-50" style={{ backgroundColor: theme.colors.background }}>
       {/* Header */}
-      <Header title="Video Collection"/>
+      <Header title="Video Diary"/>
       {/* Content */}
       {isFormVisible ? (
         <MetadataForm

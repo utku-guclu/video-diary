@@ -16,7 +16,7 @@ export default function Settings() {
   const hasVideos = videos.length > 0;
 
   return (
-    <View className="p-4 space-y-4 h-full" style={{ backgroundColor: theme.colors.background }}>
+    <View className="flex-1 h-full" style={{ backgroundColor: theme.colors.background }}>
       <Header title="Preferences" />
 
       <View className="space-y-2 gap-4 flex-1">

@@ -10,7 +10,7 @@ export default function Profile() {
   const theme = useTheme();
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
-      <Header title="Video Diary" />
+      <Header title="Video Collection" />
       <Suspense 
         fallback={<LoadingAnimation isProfile={true} />}
       >

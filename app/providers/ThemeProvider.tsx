@@ -3,7 +3,7 @@ import { useThemeStore } from '../store/themeStore';
 import { lightTheme, darkTheme } from '../theme';
 import { Theme } from '@/types';
 
-interface ExtendedTheme extends Theme {
+export interface ExtendedTheme extends Theme {
   fonts: {
     regular: string;
   };
