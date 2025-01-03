@@ -5,6 +5,7 @@ import * as MediaLibrary from 'expo-media-library';
 import getFileExtension from '@/utils/getFileExtension';
 
 import { FileInfo, VideoProcessingOptions, VideoExtension } from '@/types';
+import { ShotstackService } from './shotStack';
 
 export const VideoProcessor = {
     async generateThumbnail(videoUri: string): Promise<string> {
@@ -31,16 +32,45 @@ export const VideoProcessor = {
             extension: fileExtension
         };
     },
- 
+
     async cropVideo(uri: string, options: VideoProcessingOptions): Promise<string> {
         // start and end time for 5 second video
         const { startTime, endTime } = options.crop!;
-       
-        // Crop Video from uri using start and end time
-    
-        // Create new uri for cropped video and return the uri
-       
-        return "";
+
+        try {
+              // Validate input file exists
+            const fileInfo = await FileSystem.getInfoAsync(uri);
+            if (!fileInfo.exists) {
+                throw new Error('Source video file not found');
+            }
+
+            // Create output directory if it doesn't exist
+            const outputDir = `${FileSystem.documentDirectory}crops/`;
+            const dirInfo = await FileSystem.getInfoAsync(outputDir);
+            if (!dirInfo.exists) {
+                await FileSystem.makeDirectoryAsync(outputDir, { intermediates: true });
+            }
+
+            // Generate output filename
+            const fileName = `crop_${Date.now()}.mp4`;
+            const outputUri = `${outputDir}${fileName}`;
+
+            // Process video using Shotstack
+            const croppedVideoUrl = await ShotstackService.cropVideo(uri, {
+                startTime,
+                endTime,
+                duration: endTime - startTime
+            });
+
+            // Download the cropped video to local storage
+            const downloadResult = await FileSystem.downloadAsync(croppedVideoUrl, outputUri);
+            console.log('Video processing completed:', downloadResult);
+
+            return outputUri;
+        } catch (error) {
+            console.error('Video crop error:', error);
+            throw new Error('Video cropping failed');
+        }
     }
 };
 
