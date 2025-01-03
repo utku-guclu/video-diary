@@ -1,11 +1,10 @@
 import * as VideoThumbnails from 'expo-video-thumbnails';
 import * as FileSystem from 'expo-file-system';
-
-import { FFmpegKit } from 'ffmpeg-kit-react-native';
-
-import { FileInfo, VideoProcessingOptions, VideoExtension } from '@/types';
+import * as MediaLibrary from 'expo-media-library';
 
 import getFileExtension from '@/utils/getFileExtension';
+
+import { FileInfo, VideoProcessingOptions, VideoExtension } from '@/types';
 
 export const VideoProcessor = {
     async generateThumbnail(videoUri: string): Promise<string> {
@@ -32,23 +31,16 @@ export const VideoProcessor = {
             extension: fileExtension
         };
     },
-    
+ 
     async cropVideo(uri: string, options: VideoProcessingOptions): Promise<string> {
-        const thumbnails: string[] = [];
+        // start and end time for 5 second video
         const { startTime, endTime } = options.crop!;
-        const duration = endTime - startTime;
-        
-        // Generate thumbnails at intervals
-        for (let time = startTime; time <= endTime; time += duration / 5) {
-            const { uri: thumbUri } = await VideoThumbnails.getThumbnailAsync(uri, {
-                time,
-                quality: 1
-            });
-            thumbnails.push(thumbUri);
-        }
-        
-        // Return the first thumbnail as representative frame
-        return thumbnails[0];
+       
+        // Crop Video from uri using start and end time
+    
+        // Create new uri for cropped video and return the uri
+       
+        return "";
     }
 };
 

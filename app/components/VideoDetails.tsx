@@ -3,19 +3,15 @@ import { useEffect } from 'react';
 import { View, Text, ScrollView, useWindowDimensions, TouchableOpacity, Alert } from 'react-native';
 import { VideoView, useVideoPlayer } from 'expo-video'
 import { Feather, MaterialIcons } from '@expo/vector-icons';
-import * as ScreenOrientation from 'expo-screen-orientation';
+import { useOrientation } from '@/hooks/useOrientation';
+import { useTheme } from '@/providers/ThemeProvider';
+import { VideoDetailsProps } from '@/types';
 
+import videoStore from '../store/videoStore';
 import EditVideoModal from '@/modals/EditVideoModal';
 import CropVideoModal from '@/modals/CropVideoModal';
 
-import videoStore from '../store/videoStore';
-
-import { useOrientation } from '@/hooks/useOrientation';
-
-import { useTheme } from '@/providers/ThemeProvider';
-
-import { VideoDetailsProps } from '@/types';
-
+import * as ScreenOrientation from 'expo-screen-orientation';
 
 export default function VideoDetails({ id }: VideoDetailsProps) {
   const theme = useTheme();

@@ -43,9 +43,9 @@ export default function Home() {
           initialValues={{ title: '', description: '' }}
         />
       ) : (
-        <Suspense fallback={<LoadingAnimation isProfile={false} />}>
+        <Suspense fallback={<LoadingAnimation isCollection={false} />}>
           <VideoList
-            isProfileTab={false}
+            isCollectionTab={false}
             videos={videos}
             onVideoPress={(video) => {
               router.push(`/details/${video.id}`);

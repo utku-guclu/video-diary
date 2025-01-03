@@ -2,10 +2,10 @@ import React from 'react';
 import { View } from 'react-native';
 import { useTheme } from '@/providers/ThemeProvider';
 
-export const VideoSkeleton = ({count}: {count?: number}) => {
+export const VideoSkeleton = ({ count = 1 }: { count?: number }) => {
   const theme = useTheme();
-  
-  return (
+
+  const renderSkeletonItem = () => (
     <View 
       className="flex-row items-center p-4 mb-3 rounded-xl animate-pulse"
       style={{ backgroundColor: theme.colors.surface }}
@@ -31,6 +31,16 @@ export const VideoSkeleton = ({count}: {count?: number}) => {
           style={{ backgroundColor: theme.colors.muted + '40' }}
         />
       </View>
+    </View>
+  );
+
+  return (
+    <View>
+      {Array.from({ length: count }).map((_, index) => (
+        <View key={index}>
+          {renderSkeletonItem()}
+        </View>
+      ))}
     </View>
   );
 };

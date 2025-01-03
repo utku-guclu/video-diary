@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React, { useEffect } from 'react';
 import { ThemeProvider, useTheme } from './providers/ThemeProvider';
 
-import { 
+import {
   useFonts,
   Pacifico_400Regular,
 } from '@expo-google-fonts/pacifico';
@@ -11,15 +11,16 @@ import {
 import * as SplashScreen from 'expo-splash-screen';
 
 import { createBaseScreenOptions } from './components/BaseScreenOptions';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 SplashScreen.preventAutoHideAsync();
 
-{/* Initialize query client */}
+{/* Initialize query client */ }
 const queryClient = new QueryClient();
 
-{/* Load fonts */}
+{/* Load fonts */ }
 export default function RootLayout() {
-   const [loaded, error] = useFonts({
+  const [loaded, error] = useFonts({
     Pacifico_400Regular,
   });
 
@@ -34,11 +35,13 @@ export default function RootLayout() {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <ThemedStack />
-      </ThemeProvider>
-    </QueryClientProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <ThemedStack />
+        </ThemeProvider>
+      </QueryClientProvider>
+    </GestureHandlerRootView>
   );
 }
 
@@ -49,9 +52,9 @@ function ThemedStack() {
     <Stack
       screenOptions={createBaseScreenOptions(theme)}
     >
-      <Stack.Screen 
-        name="(tabs)" 
-        options={{ headerShown: false }} 
+      <Stack.Screen
+        name="(tabs)"
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="details/[id]"

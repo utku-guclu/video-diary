@@ -15,8 +15,7 @@ export default function CropVideoModal({ visible, video, onClose }: Props) {
     return (
         <Modal visible={visible} animationType="slide">
             <View className="flex-1 bg-white">
-              <CustomButton text="Close" onClose={onClose} />
-              
+              {/* <CustomButton text="Close" onClose={onClose} /> */}
                 <VideoCropper
                     uri={video.uri}
                     video={video}

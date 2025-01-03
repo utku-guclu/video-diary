@@ -16,7 +16,7 @@ function CroppedVideosList() {
 
   return (
     <VideoList
-      isProfileTab={true}
+      isCollectionTab={true}
       videos={croppedVideos}
       onVideoPress={(video) => {
         router.push(`/details/${video.id}`);

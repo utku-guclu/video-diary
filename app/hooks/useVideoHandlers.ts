@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Alert, Platform } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
 import { useVideoPlayer } from 'expo-video';
 import { useVideoStore } from './useVideoStore';
 import { CropConfig, ImagePickerResult, Metadata, Video } from '@/types';
 import { VideoProcessor } from '@/services/videoProcessor';
+
+import * as ImagePicker from 'expo-image-picker';
 
 const useVideoHandlers = () => {
   const [videoResult, setVideoResult] = useState<ImagePickerResult | null>(null);
@@ -106,7 +107,8 @@ const useVideoHandlers = () => {
   const handleCropComplete = useCallback(async (video: Video, cropConfig: CropConfig) => {
     try {
       // Generate thumbnail for cropped video
-      // const thumbnailUri = await VideoProcessor.generateThumbnail(video.thumbnail);
+      console.log('Generating thumbnail for cropped video...');
+      const thumbnailUri = await VideoProcessor.generateThumbnail(video.thumbnail);
 
       // Create new video object for cropped version
       const newVideo: Video = {
@@ -122,8 +124,6 @@ const useVideoHandlers = () => {
 
       // Add cropped video to store
       addVideo(newVideo);
-
-      return newVideo;
     } catch (error) {
       console.error('Error processing cropped video:', error);
       throw error; // Let the mutation handler deal with the error

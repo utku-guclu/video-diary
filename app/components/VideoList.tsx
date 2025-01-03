@@ -12,7 +12,7 @@ import { VideoSkeleton } from './VideoSkeleton';
 
 interface Props {
     videos: Video[];
-    isProfileTab: boolean;
+    isCollectionTab: boolean;
     onVideoPress: (video: Video) => void;
 }
 
@@ -25,7 +25,7 @@ interface VideoListContentProps extends Props {
 const VideoListContent = ({
     videos,
     onVideoPress,
-    isProfileTab,
+    isCollectionTab,
     onDelete,
     onEdit,
     onCrop
@@ -43,30 +43,30 @@ const VideoListContent = ({
         )}
         estimatedItemSize={100}
         ListEmptyComponent={
-            <EmptyState isProfileTab={isProfileTab} />
+            <EmptyState isCollectionTab={isCollectionTab} />
         }
         contentContainerStyle={{ paddingHorizontal: 16 }}
     />
 );
 
-const EmptyState = ({ isProfileTab }: { isProfileTab: boolean }) => {
+const EmptyState = ({ isCollectionTab }: { isCollectionTab: boolean }) => {
     const theme = useTheme();
     return (
         <View className="flex-1 items-center justify-center p-8">
             <Ionicons
-                name={isProfileTab ? "videocam-outline" : "add-circle-outline"}
+                name={isCollectionTab ? "videocam-outline" : "add-circle-outline"}
                 size={64}
                 color={theme.colors.muted}
                 style={{ marginBottom: 20 }}
             />
             <Text style={{ color: theme.colors.text }}>
-                {isProfileTab ? "Your Video Diary" : "Your Video Collection"}
+                {isCollectionTab ? "Your Video Diary" : "Your Video Collection"}
             </Text>
         </View>
     );
 };
 
-export default function VideoList({ videos, onVideoPress, isProfileTab }: Props) {
+export default function VideoList({ videos, onVideoPress, isCollectionTab }: Props) {
     const theme = useTheme();
     const { deleteVideo, updateVideo } = useVideoStore();
     const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
@@ -94,7 +94,7 @@ export default function VideoList({ videos, onVideoPress, isProfileTab }: Props)
                 <VideoListContent
                     videos={videos}
                     onVideoPress={onVideoPress}
-                    isProfileTab={isProfileTab}
+                    isCollectionTab={isCollectionTab}
                     onDelete={handleDelete}
                     onEdit={(video) => {
                         setSelectedVideo(video);
