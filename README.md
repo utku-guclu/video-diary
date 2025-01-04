@@ -140,7 +140,7 @@ MIT License - see [LICENSE](LICENSE) file
 
 ## 🙏 Credits
 
-    Expo
-    Creatomate
-    Firebase
+[Expo](https://expo.dev/)
+[Creatomate](https://creatomate.com)
+[Firebase](https://firebase.google.com/)
 
