@@ -136,7 +136,7 @@ bun run typecheck
 
 ## 📄 License
 
-MIT License - see LICENSE file
+MIT License - see [LICENSE](LICENSE) file
 
 ## 🙏 Credits
 
