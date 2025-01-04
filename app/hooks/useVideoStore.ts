@@ -1,9 +1,9 @@
 import { useCallback } from 'react';
 import videoStore from '../store/videoStore';
-import { Video } from '../types';
+import { Video, VideoStore } from '../types';
 
 export const useVideoStore = () => {
-  const store = videoStore();
+  const store: VideoStore = videoStore();
 
   const handleAddVideo = useCallback((video: Video) => {
     store.addVideo(video);

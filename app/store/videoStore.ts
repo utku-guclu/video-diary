@@ -1,28 +1,10 @@
 import { create } from 'zustand';
-import { Video } from '../types';
+import { Video, VideoStore } from '../types';
 
 import { dummyVideos } from '../temp/dummyVideos';
 
 import { DatabaseService } from '@/db/database';
 
-interface VideoStore {
-  videos: Video[];
-  croppedVideos: Video[];
-  isFormVisible: boolean;
-  selectedVideoUri: string | null;
-  selectedVideo: Video | null;
-  isCropModalVisible: boolean;
-  setSelectedVideoUri: (uri: string | null) => void;
-  setFormVisible: (visible: boolean) => void;
-  setSelectedVideo: (video: Video | null) => void;
-  setCropModalVisible: (visible: boolean) => void;
-  addVideo: (video: Video) => void;
-  deleteVideo: (id: string) => void;
-  deleteAllVideos: () => void;
-  updateVideo: (id: string, updates: Partial<Video>) => void;
-  loadVideos: () => Promise<void>;
-  loadCroppedVideos: () => Promise<Video[]>
-}
 
 // Creating video store
 const videoStore = create<VideoStore>((set) => {
@@ -37,15 +19,18 @@ const videoStore = create<VideoStore>((set) => {
     isCropModalVisible: false,
 
     // Loading videos
-    loadVideos: async () => {
+    loadVideos: async (): Promise<Video[]> => {
       try {
         const videos = await dbService.getAllVideos();
         set({ videos });
+        return videos; // Return the videos array
       } catch (error) {
         console.error('Failed to load videos:', error);
+        return []; // Return an empty array in case of error
       }
     },
 
+    // Loading cropped videos
     loadCroppedVideos: async () => {
       try {
         const videos = await dbService.getAllVideos();

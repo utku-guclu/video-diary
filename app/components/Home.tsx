@@ -3,58 +3,41 @@ import React, { Suspense, useEffect } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { FAB } from 'react-native-paper';
 
-{/* Expo */ }
-import { router } from 'expo-router';
-
 {/* Components */ }
 import Header from './Header';
 import MetadataForm from './MetaDataForm';
-import VideoList from './VideoList';
 import LoadingAnimation from './LoadingAnimation';
 
 {/* Hooks */ }
-import { useVideoStore } from '@/hooks/useVideoStore';
 import useVideoHandlers from '@/hooks/useVideoHandlers';
 import { useTheme } from '@/providers/ThemeProvider';
+import videoStore from '@/store/videoStore';
+import SuspenseVideoList from './SuspenseVideoList';
 
 export default function Home() {
-  const {
-    videos,
-    isFormVisible,
-    loadVideos
-  } = useVideoStore();
-
+  const { isFormVisible } = videoStore();
   const { handleAddVideo, handleSubmitVideo } = useVideoHandlers();
-
   const theme = useTheme();
 
-  useEffect(() => {
-    loadVideos();
-  }, []);
-
   return (
-    <View className="flex-1 bg-gray-50" style={{ backgroundColor: theme.colors.background }}>
-      {/* Header */}
+    <View 
+      className="flex-1 bg-gray-50" 
+      style={{ backgroundColor: theme.colors.background }}
+    >
       <Header title="Video Diary"/>
-      {/* Content */}
+      
       {isFormVisible ? (
         <MetadataForm
           onSubmit={handleSubmitVideo}
           initialValues={{ title: '', description: '' }}
         />
       ) : (
-        <Suspense fallback={<LoadingAnimation isCollection={false} />}>
-          <VideoList
-            isCollectionTab={false}
-            videos={videos}
-            onVideoPress={(video) => {
-              router.push(`/details/${video.id}`);
-            }}
-          />
-        </Suspense>
+          <Suspense fallback={<LoadingAnimation isCollection={false} />}>
+            <SuspenseVideoList />
+          </Suspense>
       )}
 
-      {/* Add Button */}
+      {/* Show Add Video Button only when form is not visible */}
       {!isFormVisible && (
         <FAB
           icon="plus"
@@ -64,14 +47,12 @@ export default function Home() {
             right: 0,
             bottom: 0,
             backgroundColor: theme.colors.primary,
+            borderRadius: 100,
           }}
           onPress={handleAddVideo}
+          color={theme.colors.background}
         />
       )}
     </View>
   );
 }
-
-Home.displayName = 'Home';
-
-

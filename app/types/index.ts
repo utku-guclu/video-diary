@@ -18,6 +18,33 @@ export interface VideoAsset {
   type?: string;
 }
 
+export interface VideoMetadata {
+    originalUri: string;
+    startTime: number;
+    endTime: number;
+    duration: number;
+    createdAt: number;
+}
+
+export interface VideoStore {
+  videos: Video[];
+  croppedVideos: Video[];
+  isFormVisible: boolean;
+  selectedVideoUri: string | null;
+  selectedVideo: Video | null;
+  isCropModalVisible: boolean;
+  setSelectedVideoUri: (uri: string | null) => void;
+  setFormVisible: (visible: boolean) => void;
+  setSelectedVideo: (video: Video | null) => void;
+  setCropModalVisible: (visible: boolean) => void;
+  addVideo: (video: Video) => void;
+  deleteVideo: (id: string) => void;
+  deleteAllVideos: () => void;
+  updateVideo: (id: string, updates: Partial<Video>) => void;
+  loadVideos: () => Promise<Video[]>;
+  loadCroppedVideos: () => Promise<Video[]>
+}
+
 export interface ImagePickerResult {
   canceled: boolean;
   assets?: VideoAsset[];

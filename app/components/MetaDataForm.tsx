@@ -120,7 +120,7 @@ export default function MetadataForm({ onSubmit, initialValues }: Props) {
           opacity: isValid ? 1 : 0.7
         }}
       >
-        <Text className="text-center font-semibold text-white">
+        <Text className="text-center font-semibold text-white" style={{ color: theme.colors.background }}>
           Save Details
         </Text>
       </TouchableOpacity>

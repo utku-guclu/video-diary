@@ -57,6 +57,7 @@
           }
         }
       ],
+      "@config-plugins/ffmpeg-kit-react-native",
       "expo-font"
     ]
   }

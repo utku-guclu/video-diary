@@ -6,6 +6,7 @@ import { CropConfig, ImagePickerResult, Metadata, Video } from '@/types';
 import { VideoProcessor } from '@/services/videoProcessor';
 
 import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
 
 const useVideoHandlers = () => {
   const [videoResult, setVideoResult] = useState<ImagePickerResult | null>(null);
@@ -103,32 +104,57 @@ const useVideoHandlers = () => {
     }
   }, [selectedVideoUri, player, addVideo, setFormVisible, setSelectedVideoUri]);
 
-
   const handleCropComplete = useCallback(async (video: Video, cropConfig: CropConfig) => {
     try {
-      // Generate thumbnail for cropped video
-      console.log('Generating thumbnail for cropped video...');
-      const thumbnailUri = await VideoProcessor.generateThumbnail(video.thumbnail);
+        const fileInfo = await FileSystem.getInfoAsync(cropConfig.outputUri!);
+        if (!fileInfo.exists || fileInfo.size < 1000) { // Basic size sanity check
+            throw new Error('Cropped video file is invalid or incomplete');
+        }
 
-      // Create new video object for cropped version
-      const newVideo: Video = {
-        id: Date.now().toString(),
-        uri: cropConfig.outputUri!,
-        title: `${video.title} (Cropped)`,
-        description: `Cropped version of ${video.title}`,
-        createdAt: Date.now(),
-        duration: cropConfig.duration,
-        thumbnail: video.thumbnail,
-        cropConfig
-      };
+        // Add retry logic for thumbnail generation
+        const MAX_RETRIES = 3;
+        let lastError;
+        
+        for (let i = 0; i < MAX_RETRIES; i++) {
+            try {
+                // Wait a bit longer between retries
+                if (i > 0) {
+                    await new Promise(resolve => setTimeout(resolve, 1000 * i));
+                }
+                
+                const thumbnailUri = await VideoProcessor.generateThumbnail(cropConfig.outputUri!);
+                
+                // If we get here, thumbnail generation succeeded
+                const newVideo: Video = {
+                    id: Date.now().toString(),
+                    uri: cropConfig.outputUri!,
+                    title: `${video.title} (Cropped)`,
+                    description: `Cropped version of ${video.title}`,
+                    createdAt: Date.now(),
+                    duration: cropConfig.duration || (cropConfig.endTime - cropConfig.startTime),
+                    thumbnail: thumbnailUri,
+                    cropConfig
+                };
 
-      // Add cropped video to store
-      addVideo(newVideo);
+                addVideo(newVideo);
+                return newVideo;
+            } catch (e) {
+                lastError = e;
+                console.log(`Thumbnail generation attempt ${i + 1} failed:`, e);
+            }
+        }
+        
+        throw lastError || new Error('Failed to generate thumbnail after multiple attempts');
     } catch (error) {
-      console.error('Error processing cropped video:', error);
-      throw error; // Let the mutation handler deal with the error
+        if (error instanceof Error) {
+            console.error('Error processing cropped video:', error);
+            throw new Error(`Crop processing failed: ${error.message}`);
+        } else {
+            console.error('Unexpected error processing cropped video:', error);
+            throw new Error('Crop processing failed: An unexpected error occurred');
+        }
     }
-  }, [addVideo]);
+}, [addVideo]);
 
   const handleDeleteVideos = () => {
     Alert.alert(

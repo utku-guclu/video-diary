@@ -48,6 +48,9 @@ const styles = StyleSheet.create({
     button: {
         padding: 12,
     },
+    buttonDisabled: {
+        opacity: 0.5,
+    },
     buttonText: {
         color: 'white',
         fontSize: 16,

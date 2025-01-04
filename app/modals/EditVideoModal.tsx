@@ -20,7 +20,6 @@ export default function EditVideoModal({ visible, video, onClose, onSave }: Prop
     return (
         <Modal visible={visible} animationType="slide">
             <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
-                <CustomButton text="Close" onClose={onClose} />
 
                 <MetadataForm
                     initialValues={video}
@@ -29,6 +28,7 @@ export default function EditVideoModal({ visible, video, onClose, onSave }: Prop
                         onClose();
                     }}
                 />
+                <CustomButton text="Close" onClose={onClose} />
             </View>
         </Modal>
     );

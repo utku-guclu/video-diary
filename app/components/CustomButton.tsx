@@ -9,7 +9,7 @@ export default function CustomButton({ text, onClose }: { onClose: () => void, t
     return (
         <TouchableOpacity
             onPress={onClose}
-            className="p-4 self-end rounded-xl"
+            className="p-4 self-end rounded-xl w-full items-center"
             style={{ backgroundColor: theme.colors.surface }}
         >
             <Text style={{ color: theme.colors.primary }}>{text || "Cancel"}</Text>
