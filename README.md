@@ -61,7 +61,8 @@ app/
   └── utils/            # Helper functions
 ```
 
-### Video Processing Flow
+### Video Crop Processing Flow
+![Cropping-Process-Schema](https://github.com/user-attachments/assets/c9e632c2-0766-4916-802a-10ea2d8d29f8)
 
     1. User selects video from library
     2. Video uploads to Firebase Storage
