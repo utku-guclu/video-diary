@@ -14,11 +14,13 @@ A modern React Native application for managing and editing personal video collec
 - 🌓 Light/dark theme support
 
 ### Advanced Features
-- 🔄 State management with Zustand
+- 🔄 State management with ZustandState management with Zustand (with AsyncStorage)
 - 🎨 Styled components for theming
 - 📱 Responsive design with React Native Paper
 - 🌐 Offline support with SQLite
 - 🔒 Data validation schemas with Zod
+- 🎥 Smooth animations with React Native Reanimated
+- ⚙ Background processing using Tanstack Query
 
 ## 🚀 Quick Start
 
@@ -42,10 +44,14 @@ bun expo start (--tunnel)
 ## 🏗️ Architecture
 ### Core Technologies
 
-    React Native + Expo
-    Firebase Storage
-    Creatomate API
-    Expo Video
+    React Native + Expo: Base framework for app development
+    Firebase Storage: For uploading and storing videos
+    Tanstack Query: Robust async operation handling
+    Expo Video: For video playback
+    Zustand + AsyncStorage: State management and persistent storage
+    Expo SQLite: Structured offline storage
+    NativeWind: Responsive styling
+    Zod: Validation schemas for formsReact Native + Expo
 
 ### Key Components
 
@@ -81,27 +87,37 @@ app/
 ### 📦 Core Features
 #### Video Management
 
-    Import from device library
-    Generate thumbnails
-    Save metadata
-    Delete videos
+    Import videos from the device library
+    Save and persist cropped video data
+    Display organized lists with thumbnails 
 
 #### Video Editing
 
-    Crop 5-second segments
-    Preview before saving
-    Edit title/description
-    Save multiple versions
+    Scrubber-enabled cropping
+    Add/edit metadata (title, description)
+    Save multiple versions of cropped segments
 
 #### Player Controls
 
     Play/pause
     Seek timeline
-    Duration display
-    Orientation switching
+    Display duration
+    Switch between portrait/landscape views
+
+#### Database & Offline Features
+
+    Expo SQLite integration for video records
+    AsyncStorage for state persistence
+    Seamless offline access
+
+#### UI/UX Enhancements
+    Clean navigation with Expo Router
+    Responsive styling via NativeWind
+    Smooth animations using React Native Reanimated
 
 ## 🔧 Configuration
 
+### Firebase
 ```
 const firebaseConfig = {
   apiKey: "YOUR_API_KEY",
@@ -109,6 +125,7 @@ const firebaseConfig = {
 };
 ```
 
+### Creatomate API
 ```Creatomate config
 const CREATOMATE_API_KEY = "YOUR_API_KEY";
 const CREATOMATE_API_URL = "https://api.creatomate.com/v1";
