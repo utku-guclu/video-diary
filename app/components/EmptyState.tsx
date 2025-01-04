@@ -20,7 +20,7 @@ const EmptyState = ({ isCollectionTab, onPress }: EmptyStateProps) => {
 
     const title = isCollectionTab ? "No Videos in Collection" : "Start Your Video Diary";
     const subtitle = isCollectionTab 
-        ? "Add videos to your collection by recording or importing from your device" 
+        ? "Start building your collection by selecting and cropping 5-second highlights from your video diary" 
         : "Tap the + button to add your first video memory";
 
     return (
