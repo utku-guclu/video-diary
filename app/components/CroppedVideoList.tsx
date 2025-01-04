@@ -20,7 +20,7 @@ function CroppedVideosList() {
         </View>
       )}
     >
-      <Suspense fallback={<LoadingAnimation isCollection={true} />}>
+      <Suspense fallback={<LoadingAnimation isCollection={false} />}>
         <SuspenseCroppedVideosList />
       </Suspense>
     </ErrorBoundary>

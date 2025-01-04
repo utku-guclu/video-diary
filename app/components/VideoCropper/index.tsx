@@ -254,7 +254,7 @@ export default function VideoCropper({ uri, video, onNext, onCropStart }: Props)
     if (videoState.isLoading) {
         return (
             <View style={styles.container}>
-                <LoadingAnimation />
+                <LoadingAnimation isCollection={false} />
             </View>
         );
     }

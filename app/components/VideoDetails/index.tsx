@@ -27,6 +27,7 @@ import * as ScreenOrientation from 'expo-screen-orientation';
 import styles from './styles';
 
 /**
+ * @param id - The ID of the video to display
  * VideoDetails Component
  * Displays a video player with detailed information and controls.
  * Supports both portrait and landscape orientations with responsive layout.
@@ -49,7 +50,7 @@ export default function VideoDetails({ id }: VideoDetailsProps) {
   const translateY = React.useRef(new Animated.Value(0)).current;
 
   // Store actions and video data
-  const { deleteVideo, updateVideo } = videoStore();
+  const { deleteVideo, updateVideo, loadVideos } = videoStore();
   const video = videoStore((state) => state.videos.find((video) => video.id === id));
 
   // Initialize video player ref

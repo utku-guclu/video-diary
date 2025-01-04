@@ -1,13 +1,29 @@
-import { useQuery } from '@tanstack/react-query';
-import type { Video } from '@/types';
+import { useEffect, useState } from 'react';
 import videoStore from '@/store/videoStore';
 
-export default function useCroppedVideosQuery() {
-    return useQuery<Video[]>({
-      queryKey: ['croppedVideos'],
-      queryFn: async () => {
-        const videos = await videoStore.getState().loadCroppedVideos();
-        return videos;
-      }
-    });
-  }
+export default function useCroppedVideoQuery() {
+    const { croppedVideos, loadCroppedVideos } = videoStore();
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const initializeVideos = async () => {
+            try {
+                await loadCroppedVideos();
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        initializeVideos();
+        
+        // Set up auto-refresh interval
+        const refreshInterval = setInterval(loadCroppedVideos, 5000);
+        
+        return () => clearInterval(refreshInterval);
+    }, []);
+
+    return {
+        data: croppedVideos,
+        isLoading
+    };
+}

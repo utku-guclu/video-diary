@@ -11,7 +11,8 @@ const videoStore = create<VideoStore>((set) => {
   const dbService = DatabaseService.getInstance();
 
   return {
-    videos: [],
+    // Initial state
+    videos: [...dummyVideos],
     croppedVideos: [],
     isFormVisible: false,
     selectedVideoUri: null,

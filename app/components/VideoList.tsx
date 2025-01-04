@@ -1,14 +1,16 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { View, Text, Alert } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
-import VideoItem from './VideoItem';
 import { Video } from '../types';
+import { useTheme } from '@/providers/ThemeProvider';
+import { VideoSkeleton } from './VideoSkeleton';
+
+import EmptyState from './EmptyState';
+import VideoItem from './VideoItem';
+
 import useVideoStore from '@/hooks/useVideoStore';
 import EditVideoModal from '@/modals/EditVideoModal';
 import CropVideoModal from '@/modals/CropVideoModal';
-import { useTheme } from '@/providers/ThemeProvider';
-import { Ionicons } from '@expo/vector-icons';
-import { VideoSkeleton } from './VideoSkeleton';
 
 interface Props {
     videos: Video[];
@@ -48,23 +50,6 @@ const VideoListContent = ({
         contentContainerStyle={{ paddingHorizontal: 16 }}
     />
 );
-
-const EmptyState = ({ isCollectionTab }: { isCollectionTab: boolean }) => {
-    const theme = useTheme();
-    return (
-        <View className="flex-1 items-center justify-center p-8">
-            <Ionicons
-                name={isCollectionTab ? "videocam-outline" : "add-circle-outline"}
-                size={64}
-                color={theme.colors.muted}
-                style={{ marginBottom: 20 }}
-            />
-            <Text style={{ color: theme.colors.text }}>
-                {isCollectionTab ? "Your Video Diary" : "Your Video Collection"}
-            </Text>
-        </View>
-    );
-};
 
 export default function VideoList({ videos, onVideoPress, isCollectionTab }: Props) {
     const theme = useTheme();

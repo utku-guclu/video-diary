@@ -76,7 +76,7 @@ export default function VideoItem({ video, onPress, onEdit, onDelete }: Props) {
           className="p-2"
           style={{ backgroundColor: `${theme.colors.success}20` }}
         >
-          <Feather name="edit" size={20} color={theme.colors.success} />
+          <Feather name="edit" size={20} color={theme.colors.success}/>
         </TouchableOpacity>
         <TouchableOpacity 
           onPress={handleDeletePress}

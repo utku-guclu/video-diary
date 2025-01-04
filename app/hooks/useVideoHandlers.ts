@@ -69,7 +69,7 @@ const useVideoHandlers = () => {
   }, [setSelectedVideoUri, setFormVisible]);
 
   const handleSubmitVideo = useCallback(async (metadata: Metadata) => {
-    console.log('handleSubmitVideo called with:', metadata);
+    // console.log('handleSubmitVideo called with:', metadata);
     if (!selectedVideoUri || !videoResult?.assets?.[0]) return;
 
     // Generate thumbnail

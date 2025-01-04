@@ -1,21 +1,15 @@
 import * as VideoThumbnails from 'expo-video-thumbnails';
 import * as FileSystem from 'expo-file-system';
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import { initializeApp } from 'firebase/app';
-import getFileExtension from '@/utils/getFileExtension';
-import { FileInfo, VideoProcessingOptions, VideoExtension } from '@/types';
+
 import CreatomateService from './creatomate';
-import { VideoMetadata } from '@/types';
+import getFileExtension from '@/utils/getFileExtension';
 
-// Firebase configuration for storage initialization
-const firebaseConfig = {
-    apiKey: process.env.FIREBASE_API_KEY,
-    storageBucket: process.env.FIREBASE_STORAGE_BUCKET
-};
+import { FileInfo, VideoProcessingOptions, VideoExtension, VideoMetadata } from '@/types';
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { app } from '@/config/firebase';
 
-// Initialize Firebase app and get storage instance
-initializeApp(firebaseConfig);
-const storage = getStorage();
+// Get Firebase Storage instance
+const storage = getStorage(app);
 
 export const VideoProcessor = {
     /**
@@ -167,7 +161,7 @@ export const VideoProcessor = {
                 duration: endTime - startTime
             });
     
-            console.log('croppedVideoUrl', croppedVideoUrl);
+            // console.log('croppedVideoUrl', croppedVideoUrl);
     
             // Download with verification
             const finalVideo = await FileSystem.downloadAsync(croppedVideoUrl, outputUri);

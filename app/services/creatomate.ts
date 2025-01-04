@@ -2,8 +2,8 @@ import { CropConfig } from '@/types';
 import axios, { AxiosError } from 'axios';
 
 export default class CreatomateService {
-    private static readonly API_KEY = process.env.CREATOMATE_API_KEY;
-    private static readonly API_URL = process.env.CREATOMATE_API_URL;
+    private static readonly API_KEY = process.env.EXPO_PUBLIC_CREATOMATE_API_KEY;
+    private static readonly API_URL = process.env.EXPO_PUBLIC_CREATOMATE_API_URL;
 
     private static async checkRenderStatus(renderId: string): Promise<string> {
         const maxAttempts = 30; // Maximum number of attempts
