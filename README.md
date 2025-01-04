@@ -4,6 +4,7 @@ A modern React Native application for managing and editing personal video collec
 
 ## ✨ Features
 
+### Core Features
 - 📱 Import videos from device library
 - ✂️ Crop videos with precise 5-second segments
 - 📝 Add metadata (title, description)
@@ -12,24 +13,31 @@ A modern React Native application for managing and editing personal video collec
 - 🔄 Portrait/landscape orientation support
 - 🌓 Light/dark theme support
 
+### Advanced Features
+- 🔄 State management with Zustand
+- 🎨 Styled components for theming
+- 📱 Responsive design with React Native Paper
+- 🌐 Offline support with SQLite
+- 🔒 Data validation schemas with Zod
+
 ## 🚀 Quick Start
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/video-diary.git
+git clone https://github.com/utku-guclu/video-diary.git
 
 # Install dependencies
 bun install
 
 # Start development server
-bun start
+bun expo start (--tunnel)
 ```
 
 ## 📱 Running the App
 
     - Install Expo Go on your mobile device
     - Scan QR code from terminal
-    - Or run in web browser at http://localhost:3000
+    - Or run in web browser at http://localhost:3000 
 
 ## 🏗️ Architecture
 ### Core Technologies
