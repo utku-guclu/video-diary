@@ -8,6 +8,8 @@ import { FileInfo, VideoProcessingOptions, VideoExtension, VideoMetadata } from 
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { app } from '@/config/firebase';
 
+import { thumbnailCache } from '@/utils/cache';
+
 // Get Firebase Storage instance
 const storage = getStorage(app);
 
@@ -19,6 +21,11 @@ export const VideoProcessor = {
      */
     async generateThumbnail(videoUri: string): Promise<string> {
         console.log('Generating thumbnail for video:', videoUri);
+        // Check cache first
+        const cachedThumbnail = thumbnailCache.get(videoUri);
+        if (cachedThumbnail) {
+            return cachedThumbnail as string;
+        }
 
         // Verify file exists and is readable
         const fileInfo = await FileSystem.getInfoAsync(videoUri);
@@ -26,10 +33,14 @@ export const VideoProcessor = {
             throw new Error('Video file not found');
         }
 
+        // Generate new thumbnail
         const { uri } = await VideoThumbnails.getThumbnailAsync(videoUri, {
             time: 0,          // Generate thumbnail from first frame
             quality: 0.7      // 70% quality for optimal size/quality ratio
         });
+
+        // Store in cache
+        thumbnailCache.set(videoUri, uri);
         return uri;
     },
 

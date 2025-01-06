@@ -3,6 +3,7 @@
   "compilerOptions": {
     "strict": true,
     "target": "esnext",
+    "module": "esnext",
     "jsx": "react", 
     "types": ["jest", "node", "@testing-library/jest-native", "nativewind/types"]
   }

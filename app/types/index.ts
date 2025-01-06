@@ -81,6 +81,12 @@ export interface VideoDetailsProps {
 
 export type VideoExtension = 'mp4' | 'mov' | 'avi' | 'mkv' | 'wmv' | 'flv' | 'webm';
 
+// Cache
+export interface VideoCacheValue {
+  videos: Video[];
+  size: number;
+}
+
 // Theme
 export type Theme = {
   colors: {

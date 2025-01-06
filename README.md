@@ -131,6 +131,14 @@ const CREATOMATE_API_KEY = "YOUR_API_KEY";
 const CREATOMATE_API_URL = "https://api.creatomate.com/v1";
 ```
 
+## ⏳ Performance
+    Virtualized lists for smooth scrolling (`FlashList`)
+    Memoized components with `React.memo`
+    Deferred loading with `Suspense`
+    Selective store updates with Zustand selectors
+    Persisted state with efficient storage strategies
+    LRU cache for frequently accessed data
+
 ## 📱 Supported Platforms
 
     iOS 13+

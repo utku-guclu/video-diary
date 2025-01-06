@@ -5,6 +5,7 @@ import { dummyVideos } from '../temp/dummyVideos';
 
 import { DatabaseService } from '@/db/database';
 
+import { videoCache } from '@/utils/cache';
 
 // Creating video store
 const videoStore = create<VideoStore>((set) => {
@@ -22,15 +23,31 @@ const videoStore = create<VideoStore>((set) => {
     // Loading videos
     loadVideos: async (): Promise<Video[]> => {
       try {
+        const CACHE_KEY = 'all_videos';
+        
+        // Get from cache with proper cache instance
+        const cached = videoCache.get(CACHE_KEY);
+        if (cached) {
+          return cached.videos;
+        }
+    
+        // Fresh load from database
         const videos = await dbService.getAllVideos();
         set({ videos });
-        return videos; // Return the videos array
+    
+        // Cache with size calculation
+        videoCache.set(CACHE_KEY, {
+          videos,
+          size: videos.reduce((size, video) => size + (video.thumbnail?.length || 0), 0)
+        });
+    
+        return videos;
       } catch (error) {
         console.error('Failed to load videos:', error);
-        return []; // Return an empty array in case of error
+        return [];
       }
     },
-
+  
     // Loading cropped videos
     loadCroppedVideos: async () => {
       try {

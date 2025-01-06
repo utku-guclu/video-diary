@@ -12,7 +12,7 @@ interface Props {
   onCrop: () => void;
 }
 
-export default function VideoItem({ video, onPress, onEdit, onDelete }: Props) {
+export default React.memo(function VideoItem({ video, onPress, onEdit, onDelete }: Props) {
   const theme = useTheme();
 
   const handleEditPress = (e: any) => {
@@ -26,7 +26,7 @@ export default function VideoItem({ video, onPress, onEdit, onDelete }: Props) {
   };
 
   return (
-    <TouchableOpacity 
+    <TouchableOpacity
       testID="video-item"
       onPress={onPress}
       className="flex-row items-center p-4 mb-3 rounded-xl"
@@ -40,29 +40,29 @@ export default function VideoItem({ video, onPress, onEdit, onDelete }: Props) {
       }}
     >
       {/* Thumbnail */}
-      <Image 
+      <Image
         source={{ uri: video.thumbnail }}
         className="w-24 h-24 rounded-lg"
         style={{ backgroundColor: theme.colors.muted }}
       />
-      
+
       {/* Video Info */}
       <View className="ml-4 flex-1">
-        <Text 
-          className="text-lg font-semibold mb-1" 
+        <Text
+          className="text-lg font-semibold mb-1"
           style={{ color: theme.colors.text }}
           numberOfLines={1}
         >
           {video.title}
         </Text>
-        <Text 
-          className="text-sm mb-1 italic" 
+        <Text
+          className="text-sm mb-1 italic"
           style={{ color: theme.colors.muted }}
         >
           {new Date(video.createdAt).toLocaleDateString()}
         </Text>
-        <Text 
-          className="text-sm" 
+        <Text
+          className="text-sm"
           style={{ color: theme.colors.muted }}
         >
           {video.duration}s
@@ -71,14 +71,14 @@ export default function VideoItem({ video, onPress, onEdit, onDelete }: Props) {
 
       {/* Action Icons */}
       <View className="flex-col items-center space-x-5 pl-2 gap-4">
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={handleEditPress}
           className="p-2"
           style={{ backgroundColor: `${theme.colors.success}20` }}
         >
-          <Feather name="edit" size={20} color={theme.colors.success}/>
+          <Feather name="edit" size={20} color={theme.colors.success} />
         </TouchableOpacity>
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={handleDeletePress}
           className="p-2"
           style={{ backgroundColor: `${theme.colors.error}20` }}
@@ -88,4 +88,4 @@ export default function VideoItem({ video, onPress, onEdit, onDelete }: Props) {
       </View>
     </TouchableOpacity>
   );
-}
+});
