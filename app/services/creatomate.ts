@@ -1,11 +1,21 @@
 import { CropConfig } from '@/types';
 import axios, { AxiosError } from 'axios';
+import NetInfo from '@react-native-community/netinfo';
 
 export default class CreatomateService {
     private static readonly API_KEY = process.env.EXPO_PUBLIC_CREATOMATE_API_KEY;
     private static readonly API_URL = process.env.EXPO_PUBLIC_CREATOMATE_API_URL;
 
+    private static async checkConnection() {
+        const networkState = await NetInfo.fetch();
+        if (!networkState.isConnected) {
+            throw new Error('No internet connection available');
+        }
+    }
+
     private static async checkRenderStatus(renderId: string): Promise<string> {
+        await this.checkConnection();
+
         const maxAttempts = 30; // Maximum number of attempts
         const delayMs = 2000;   // 2 seconds between attempts
 
