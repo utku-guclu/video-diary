@@ -52,8 +52,11 @@ export interface ImagePickerResult {
 
 export interface FileInfo {
   exists: boolean;
-  size: number;
   uri: string;
+  isDirectory: boolean;
+  size?: number;
+  modificationTime?: number;
+  md5?: string;
 }
 
 // Metadata

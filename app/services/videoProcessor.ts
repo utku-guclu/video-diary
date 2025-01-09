@@ -8,12 +8,13 @@ import { FileInfo, VideoProcessingOptions, VideoExtension, VideoMetadata } from 
 
 import { thumbnailCache } from '@/utils/cache';
 
-import { app } from '@/config/firebase';
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import { testFirebaseStorage, testUploadPermissions } from 'tests/firebase/test';
+import IMGUR_CONFIG from '@/config/imgur';
 
-// Get Firebase Storage instance
-const storage = getStorage(app);
+interface UploadResponse {
+    FileId: string;
+    FileName: string;
+    FileExt: string;
+}
 
 export const VideoProcessor = {
     /**
@@ -59,13 +60,13 @@ export const VideoProcessor = {
 
             // Check if metadata file exists
             const metadataInfo = await FileSystem.getInfoAsync(metadataPath);
-            
+
             if (!metadataInfo.exists) {
                 // Check in the crops directory for metadata
                 const cropsDir = `${FileSystem.documentDirectory}crops/`;
                 const filename = videoUri.split('/').pop()?.split('.')[0];
                 const alternateMetadataPath = `${cropsDir}metadata_${filename}.json`;
-                
+
                 const alternateMetadataInfo = await FileSystem.getInfoAsync(alternateMetadataPath);
                 if (!alternateMetadataInfo.exists) {
                     return null;
@@ -102,67 +103,105 @@ export const VideoProcessor = {
         }
 
         // Check file size (max 100MB)
+        const fileSize = fileInfo.size ?? 0;
         const MAX_FILE_SIZE = 100 * 1024 * 1024;
-        if (fileInfo.size > MAX_FILE_SIZE) {
+        if (fileSize > MAX_FILE_SIZE) {
             throw new Error('Video file is too large (max 100MB)');
         }
 
         return {
             exists: fileInfo.exists,
-            size: fileInfo.size,
+            size: fileSize,
             isValidType: validVideoExtensions.includes(fileExtension as VideoExtension),
             extension: fileExtension
         };
     },
 
     /**
-     * Uploads video to Firebase Storage and returns public URL
+ * Validates and formats the API configuration
+ * @private
+ */
+    // validateApiConfig(): { baseUrl: string, secretKey: string } {
+    //     if (!CONVERT_API_CONFIG?.BASE_URL) {
+    //         throw new Error('Convert API base URL is not configured');
+    //     }
+    //     if (!CONVERT_API_CONFIG?.SECRET_KEY) {
+    //         throw new Error('Convert API secret key is not configured');
+    //     }
+
+    //     const baseUrl = CONVERT_API_CONFIG.BASE_URL.trim();
+    //     const secretKey = CONVERT_API_CONFIG.SECRET_KEY.trim();
+
+    //     // Ensure URL has proper scheme
+    //     if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
+    //         throw new Error('Convert API base URL must start with http:// or https://');
+    //     }
+
+    //     // Remove trailing slash if present
+    //     return {
+    //         baseUrl: baseUrl.replace(/\/$/, ''),
+    //         secretKey
+    //     };
+    // },
+
+    /**
+     * Uploads video via Convert API and returns public URL
      * @param fileUri - Local URI of the video file
      * @returns Promise containing the public download URL
      */
+
     async getUploadUrl(fileUri: string): Promise<string> {
-        testUploadPermissions();
-        testFirebaseStorage();
-        
-        return new Promise((resolve, reject) => {
-            const filename = `videos/${Date.now()}.mp4`;
-            const storageRef = ref(storage, filename);
-            
-            // Set smaller chunk size for better upload handling
-            const metadata = {
-                contentType: 'video/mp4',
-                customMetadata: {
-                    originalName: fileUri.split('/').pop() || 'video.mp4'
-                }
-            };
-    
-            fetch(fileUri)
-                .then(response => response.blob())
-                .then(blob => {
-                    const uploadTask = uploadBytesResumable(storageRef, blob, metadata);
-                    
-                    // Enhanced progress monitoring
-                    uploadTask.on(
-                        'state_changed',
-                        (snapshot) => {
-                            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                            const state = snapshot.state;
-                            console.log(`📊 Upload progress: ${progress.toFixed(2)}% (${state})`);
-                            console.log(`📦 Bytes: ${snapshot.bytesTransferred}/${snapshot.totalBytes}`);
-                        },
-                        (error) => {
-                            console.log('📡 Upload state:', error.serverResponse);
-                            console.log('🔍 Error code:', error.code);
-                            reject(error);
-                        },
-                        async () => {
-                            const downloadUrl = await getDownloadURL(storageRef);
-                            console.log('🎯 Success! URL:', downloadUrl);
-                            resolve(downloadUrl);
-                        }
-                    );
-                });
-        });
+        try {
+            // Get file info
+            const fileInfo = await FileSystem.getInfoAsync(fileUri, { size: true });
+
+            // Create form data
+            const formData = new FormData();
+            formData.append('video', {
+                uri: fileUri,
+                type: this.getMimeType(getFileExtension(fileUri)),
+                name: fileUri.split('/').pop()
+            } as any);
+
+            // Upload to Imgur
+            const response = await fetch(`${IMGUR_CONFIG.apiUrl}/upload`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Client-ID ${IMGUR_CONFIG.clientId}`
+                },
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error(`Upload failed: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            return data.data.link;
+
+        } catch (err) {
+            const error = err as Error;
+            console.error('❌ Upload error:', error);
+            throw new Error(`Video upload failed: ${error.message}`);
+        }
+    },
+
+    /**
+     * Get MIME type based on file extension
+     * @private
+     */
+    getMimeType(extension: string): string {
+        const mimeTypes: Record<string, string> = {
+            'mp4': 'video/mp4',
+            'mov': 'video/quicktime',
+            'avi': 'video/x-msvideo',
+            'wmv': 'video/x-ms-wmv',
+            'flv': 'video/x-flv',
+            'webm': 'video/webm',
+            'mkv': 'video/x-matroska'
+        };
+
+        return mimeTypes[extension] || 'video/mp4';
     },
 
     /**
@@ -174,16 +213,16 @@ export const VideoProcessor = {
     async cropVideo(uri: string, options: VideoProcessingOptions): Promise<string> {
         const cropsDir = `${FileSystem.documentDirectory}crops/`;
         const tempDir = `${FileSystem.documentDirectory}temp/`;
-        const outputUri = `${cropsDir}crop_${Date.now()}.mp4`; 
-    
+        const outputUri = `${cropsDir}crop_${Date.now()}.mp4`;
+
         try {
             console.log('📁 Creating directories...');
             await FileSystem.makeDirectoryAsync(cropsDir, { intermediates: true });
             await FileSystem.makeDirectoryAsync(tempDir, { intermediates: true });
-    
+
             const tempFile = `${tempDir}source_${Date.now()}.mp4`;
             const { startTime, endTime } = options.crop!;
-    
+
             console.log('🔄 Processing source video...');
             let sourceVideoUrl;
             if (uri.startsWith('file://')) {
@@ -195,7 +234,7 @@ export const VideoProcessor = {
                 sourceVideoUrl = await this.getUploadUrl(downloadResult.uri);
             }
             console.log('✅ Source video ready:', sourceVideoUrl);
-    
+
             console.log('✂️ Starting Creatomate service...');
             const croppedVideoUrl = await CreatomateService.cropVideo(sourceVideoUrl, {
                 startTime,
@@ -203,18 +242,18 @@ export const VideoProcessor = {
                 duration: endTime - startTime
             });
             console.log('✅ Creatomate processing complete:', croppedVideoUrl);
-    
+
             console.log('⬇️ Downloading final video...');
             // Download with verification
             const finalVideo = await FileSystem.downloadAsync(croppedVideoUrl, outputUri);
-            
+
             console.log('🔍 Verifying downloaded file...');
             // Verify downloaded file
             const downloadedFileInfo = await FileSystem.getInfoAsync(finalVideo.uri);
             if (!downloadedFileInfo.exists || downloadedFileInfo.size < 1000) {
                 throw new Error('Downloaded video file is invalid or incomplete');
             }
-    
+
             console.log('🎥 Testing video playability...');
             // Verify video is readable
             try {
@@ -226,7 +265,7 @@ export const VideoProcessor = {
             } catch (e) {
                 throw new Error('Downloaded video file is corrupt or unreadable');
             }
-    
+
             console.log('📝 Saving metadata...');
             const metadata = {
                 originalUri: uri,
@@ -235,27 +274,27 @@ export const VideoProcessor = {
                 duration: endTime - startTime,
                 createdAt: Date.now()
             };
-    
+
             const filename = outputUri.split('/').pop()?.split('.')[0];
             const metadataPath = `${cropsDir}metadata_${filename}.json`;
             await FileSystem.writeAsStringAsync(metadataPath, JSON.stringify(metadata));
-    
+
             console.log('🧹 Cleaning up temporary files...');
             await FileSystem.deleteAsync(tempDir, { idempotent: true });
 
             // console.log('uri', finalVideo.uri);
             // console.log('metadata', metadata);
-            
+
             console.log('✨ Video crop complete!', { outputUri: finalVideo.uri });
             return finalVideo.uri;
-    
+
         } catch (error) {
             // Clean up partial downloads
             console.error('❌ Video crop error:', error);
             try {
                 await FileSystem.deleteAsync(outputUri, { idempotent: true });
-            } catch {}
-            
+            } catch { }
+
             console.error('Video crop error:', error);
             throw error;
         }
