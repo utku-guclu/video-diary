@@ -22,6 +22,9 @@ A modern React Native application for managing and editing personal video collec
 - 🎥 Smooth animations with React Native Reanimated
 - ⚙ Background processing using Tanstack Query
 
+### Preview the App
+![video-diary](https://github.com/user-attachments/assets/3ba0a812-df1f-44f1-bfb6-a0864774ffd0)
+
 ## 🚀 Quick Start
 
 ```bash
