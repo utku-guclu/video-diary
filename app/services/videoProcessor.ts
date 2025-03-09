@@ -1,20 +1,9 @@
 import * as VideoThumbnails from 'expo-video-thumbnails';
 import * as FileSystem from 'expo-file-system';
 
-import CreatomateService from './creatomate';
 import getFileExtension from '@/utils/getFileExtension';
-
 import { FileInfo, VideoProcessingOptions, VideoExtension, VideoMetadata } from '@/types';
-
 import { thumbnailCache } from '@/utils/cache';
-
-import IMGUR_CONFIG from '@/config/imgur';
-
-interface UploadResponse {
-    FileId: string;
-    FileName: string;
-    FileExt: string;
-}
 
 export const VideoProcessor = {
     /**
@@ -118,75 +107,6 @@ export const VideoProcessor = {
     },
 
     /**
- * Validates and formats the API configuration
- * @private
- */
-    // validateApiConfig(): { baseUrl: string, secretKey: string } {
-    //     if (!CONVERT_API_CONFIG?.BASE_URL) {
-    //         throw new Error('Convert API base URL is not configured');
-    //     }
-    //     if (!CONVERT_API_CONFIG?.SECRET_KEY) {
-    //         throw new Error('Convert API secret key is not configured');
-    //     }
-
-    //     const baseUrl = CONVERT_API_CONFIG.BASE_URL.trim();
-    //     const secretKey = CONVERT_API_CONFIG.SECRET_KEY.trim();
-
-    //     // Ensure URL has proper scheme
-    //     if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
-    //         throw new Error('Convert API base URL must start with http:// or https://');
-    //     }
-
-    //     // Remove trailing slash if present
-    //     return {
-    //         baseUrl: baseUrl.replace(/\/$/, ''),
-    //         secretKey
-    //     };
-    // },
-
-    /**
-     * Uploads video via Convert API and returns public URL
-     * @param fileUri - Local URI of the video file
-     * @returns Promise containing the public download URL
-     */
-
-    async getUploadUrl(fileUri: string): Promise<string> {
-        try {
-            // Get file info
-            const fileInfo = await FileSystem.getInfoAsync(fileUri, { size: true });
-
-            // Create form data
-            const formData = new FormData();
-            formData.append('video', {
-                uri: fileUri,
-                type: this.getMimeType(getFileExtension(fileUri)),
-                name: fileUri.split('/').pop()
-            } as any);
-
-            // Upload to Imgur
-            const response = await fetch(`${IMGUR_CONFIG.apiUrl}/upload`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Client-ID ${IMGUR_CONFIG.clientId}`
-                },
-                body: formData
-            });
-
-            if (!response.ok) {
-                throw new Error(`Upload failed: ${response.statusText}`);
-            }
-
-            const data = await response.json();
-            return data.data.link;
-
-        } catch (err) {
-            const error = err as Error;
-            console.error('❌ Upload error:', error);
-            throw new Error(`Video upload failed: ${error.message}`);
-        }
-    },
-
-    /**
      * Get MIME type based on file extension
      * @private
      */
@@ -205,100 +125,60 @@ export const VideoProcessor = {
     },
 
     /**
-     * Crops video using Shotstack service
+     * Crops video with metadata for displaying in the app
+     * Uses a simulated crop by creating metadata about the crop points
+     * but doesn't physically trim the video file
+     * 
      * @param uri - Video URI to crop
      * @param options - Crop options including start and end times
      * @returns Promise containing the cropped video URI
      */
     async cropVideo(uri: string, options: VideoProcessingOptions): Promise<string> {
-        const cropsDir = `${FileSystem.documentDirectory}crops/`;
-        const tempDir = `${FileSystem.documentDirectory}temp/`;
-        const outputUri = `${cropsDir}crop_${Date.now()}.mp4`;
-
         try {
-            console.log('📁 Creating directories...');
-            await FileSystem.makeDirectoryAsync(cropsDir, { intermediates: true });
-            await FileSystem.makeDirectoryAsync(tempDir, { intermediates: true });
-
-            const tempFile = `${tempDir}source_${Date.now()}.mp4`;
-            const { startTime, endTime } = options.crop!;
-
-            console.log('🔄 Processing source video...');
-            let sourceVideoUrl;
-            if (uri.startsWith('file://')) {
-                console.log('📤 Uploading local file...');
-                sourceVideoUrl = await this.getUploadUrl(uri);
-            } else {
-                console.log('⬇️ Downloading remote file...');
-                const downloadResult = await FileSystem.downloadAsync(uri, tempFile);
-                sourceVideoUrl = await this.getUploadUrl(downloadResult.uri);
+            // Verify crop options exist
+            if (!options.crop) {
+                throw new Error('Crop options are required');
             }
-            console.log('✅ Source video ready:', sourceVideoUrl);
 
-            console.log('✂️ Starting Creatomate service...');
-            const croppedVideoUrl = await CreatomateService.cropVideo(sourceVideoUrl, {
-                startTime,
-                endTime,
-                duration: endTime - startTime
+            // Ensure the crops directory exists
+            const cropsDir = `${FileSystem.documentDirectory}crops/`;
+            const cropsDirInfo = await FileSystem.getInfoAsync(cropsDir);
+
+            if (!cropsDirInfo.exists) {
+                await FileSystem.makeDirectoryAsync(cropsDir, { intermediates: true });
+            }
+
+            const outputFilename = `crop_${Date.now()}.mp4`;
+            const outputUri = `${cropsDir}${outputFilename}`;
+
+            // First, create a copy of the original file
+            await FileSystem.copyAsync({
+                from: uri,
+                to: outputUri
             });
-            console.log('✅ Creatomate processing complete:', croppedVideoUrl);
 
-            console.log('⬇️ Downloading final video...');
-            // Download with verification
-            const finalVideo = await FileSystem.downloadAsync(croppedVideoUrl, outputUri);
-
-            console.log('🔍 Verifying downloaded file...');
-            // Verify downloaded file
-            const downloadedFileInfo = await FileSystem.getInfoAsync(finalVideo.uri);
-            if (!downloadedFileInfo.exists || downloadedFileInfo.size < 1000) {
-                throw new Error('Downloaded video file is invalid or incomplete');
-            }
-
-            console.log('🎥 Testing video playability...');
-            // Verify video is readable
-            try {
-                const testThumbnail = await VideoThumbnails.getThumbnailAsync(finalVideo.uri, {
-                    time: 0,
-                    quality: 0.1
-                });
-                await FileSystem.deleteAsync(testThumbnail.uri, { idempotent: true });
-            } catch (e) {
-                throw new Error('Downloaded video file is corrupt or unreadable');
-            }
-
-            console.log('📝 Saving metadata...');
-            const metadata = {
+            // Save the crop metadata for the new file
+            const metadata: VideoMetadata = {
                 originalUri: uri,
-                startTime,
-                endTime,
-                duration: endTime - startTime,
+                startTime: options.crop.startTime,
+                endTime: options.crop.endTime,
+                duration: options.crop.duration,
                 createdAt: Date.now()
             };
 
-            const filename = outputUri.split('/').pop()?.split('.')[0];
-            const metadataPath = `${cropsDir}metadata_${filename}.json`;
-            await FileSystem.writeAsStringAsync(metadataPath, JSON.stringify(metadata));
+            const metadataUri = `${cropsDir}metadata_${outputFilename.split('.')[0]}.json`;
+            await FileSystem.writeAsStringAsync(
+                metadataUri,
+                JSON.stringify(metadata)
+            );
 
-            console.log('🧹 Cleaning up temporary files...');
-            await FileSystem.deleteAsync(tempDir, { idempotent: true });
+            console.log('Video crop metadata created successfully:', outputUri);
+            console.log('Note: Video file is not physically trimmed. Your player will use the metadata to display only the selected portion.');
 
-            // console.log('uri', finalVideo.uri);
-            // console.log('metadata', metadata);
-
-            console.log('✨ Video crop complete!', { outputUri: finalVideo.uri });
-            return finalVideo.uri;
-
+            return outputUri;
         } catch (error) {
-            // Clean up partial downloads
-            console.error('❌ Video crop error:', error);
-            try {
-                await FileSystem.deleteAsync(outputUri, { idempotent: true });
-            } catch { }
-
-            console.error('Video crop error:', error);
-            throw error;
+            console.error('Error cropping video:', error);
+            throw new Error(`Failed to crop video: ${(error as Error).message}`);
         }
     }
-}
-
-export default VideoProcessor;
+};
