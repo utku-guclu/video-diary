@@ -1,4 +1,5 @@
 # Video Diary App
+![Video Diary](https://github.com/user-attachments/assets/bfb19265-2a6f-4531-a94b-270df07bb1d3)
 
 A modern React Native application for managing and editing personal video collections. Built with Expo and powered by Creatomate for video processing.
 
